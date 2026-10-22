@@ -7,12 +7,12 @@ Website hoàn tiền (cashback) cho Shopee, TikTok Shop, Lazada: thành viên d�
 - Laravel 13, PHP 8.3+
 - Blade + Livewire 4 + Tailwind CSS 4 cho trang công khai và dashboard thành viên
 - Filament 5 cho trang quản trị `/admin`
-- MySQL 8 (production), SQLite (dev/test)
+- PostgreSQL trên Supabase (local Docker + production dùng chung), SQLite (dev/test)
 - Pest cho test
 
 ## Chạy bằng Docker
 
-Chỉ cần Docker Desktop, không cần cài PHP/Node/MySQL:
+Chỉ cần Docker Desktop, không cần cài PHP/Node. Điền thông tin Supabase (`DB_HOST`, `DB_USERNAME`, `DB_PASSWORD`...) vào `.env` trước khi chạy:
 
 ```bash
 docker compose up -d --build
@@ -23,14 +23,12 @@ docker compose up -d --build
 | http://localhost:8001 | Website |
 | http://localhost:8001/admin | Trang quản trị |
 | http://localhost:8025 | Mailpit, xem email hệ thống gửi (quên mật khẩu...) |
-| `localhost:3307` | MySQL (user `cashback` / pass `secret`, DB `cashback`) |
 
-Lần chạy đầu, container `app` tự tạo `APP_KEY`, chạy migrate và seed dữ liệu demo (tài khoản ở mục dưới). Các container:
+Container `app` tự tạo `APP_KEY` ở lần chạy đầu và chạy migrate lên Supabase. **DB này dùng chung với production**: không seed demo (`SEED_DATABASE=true`), không chạy `migrate:fresh`/`db:wipe`. Các container:
 
 - `app`: web (FrankenPHP)
-- `queue`: gửi thông báo
-- `scheduler`: cron đồng bộ đơn, duyệt đơn đến hạn, quét gian lận
-- `mysql`, `mailpit`
+- `queue`, `scheduler` (chỉ bật khi cần: `docker compose --profile workers up -d`): gửi thông báo, cron đồng bộ đơn, duyệt đơn đến hạn, quét gian lận
+- `mailpit`
 
 Lệnh hay dùng:
 
@@ -39,10 +37,10 @@ docker compose logs -f app                          # xem log
 docker compose exec app php artisan orders:sync      # chạy artisan trong container
 docker compose up -d --build                         # áp dụng thay đổi code (build lại image)
 docker compose down                                  # dừng (giữ dữ liệu)
-docker compose down -v                               # dừng và XOÁ toàn bộ dữ liệu MySQL + file upload
+docker compose down -v                               # dừng và XOÁ file upload trong volume storage
 ```
 
-Đổi cổng khi bị trùng: `APP_PORT=8080 DB_FORWARD_PORT=3308 docker compose up -d`. Tắt seed demo: `SEED_DATABASE=false`. Khi deploy thật, đặt `APP_ENV=production`, `APP_DEBUG=false`, `SEED_DATABASE=false` và đổi mật khẩu MySQL trong `compose.yaml`.
+Đổi cổng khi bị trùng: `APP_PORT=8080 docker compose up -d`.
 
 ## Chạy local (không Docker)
 

@@ -5,7 +5,7 @@
 # ---------------------------------------------------------------
 FROM dunglas/frankenphp:1-php8.4 AS base
 
-RUN install-php-extensions pdo_mysql intl zip gd bcmath pcntl opcache exif
+RUN install-php-extensions pdo_mysql pdo_pgsql intl zip gd bcmath pcntl opcache exif
 
 COPY --from=composer:2 /usr/bin/composer /usr/bin/composer
 COPY docker/php.ini $PHP_INI_DIR/conf.d/zz-app.ini

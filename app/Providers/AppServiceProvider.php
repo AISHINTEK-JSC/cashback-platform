@@ -5,7 +5,11 @@ namespace App\Providers;
 use App\Services\Affiliate\AffiliateManager;
 use App\Support\Settings;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Foundation\Events\DiagnosingHealth;
 use Illuminate\Support\Carbon;
+use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Event;
+use Illuminate\Support\Facades\URL;
 use Illuminate\Support\ServiceProvider;
 
 class AppServiceProvider extends ServiceProvider
@@ -26,5 +30,11 @@ class AppServiceProvider extends ServiceProvider
     {
         Model::preventSilentlyDiscardingAttributes(! $this->app->isProduction());
         Carbon::setLocale(config('app.locale'));
+
+        if ($this->app->isProduction()) {
+            URL::forceScheme('https');
+        }
+
+        Event::listen(DiagnosingHealth::class, fn () => DB::select('select 1'));
     }
 }
