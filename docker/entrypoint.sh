@@ -42,4 +42,9 @@ if [ "$APP_ENV" = "production" ]; then
     php artisan optimize
 fi
 
+# Host như Render cấp cổng qua $PORT; mặc định nghe cổng 80.
+if [ -n "$PORT" ]; then
+    export SERVER_NAME=":$PORT"
+fi
+
 exec docker-php-entrypoint "$@"

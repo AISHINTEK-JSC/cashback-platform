@@ -7,6 +7,9 @@ FROM dunglas/frankenphp:1-php8.4 AS base
 
 RUN install-php-extensions pdo_mysql pdo_pgsql intl zip gd bcmath pcntl opcache exif
 
+# Gỡ file capability: host chạy container với quyền hạn chế (Render) từ chối exec binary có capability
+RUN setcap -r /usr/local/bin/frankenphp
+
 COPY --from=composer:2 /usr/bin/composer /usr/bin/composer
 COPY docker/php.ini $PHP_INI_DIR/conf.d/zz-app.ini
 
