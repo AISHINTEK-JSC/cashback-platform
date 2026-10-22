@@ -1,0 +1,135 @@
+<?php
+
+use App\Enums\FraudFlagStatus;
+use App\Enums\OrderStatus;
+use App\Enums\UserStatus;
+use App\Enums\WalletBucket;
+use App\Enums\WalletTransactionType;
+use App\Enums\WithdrawalStatus;
+use App\Filament\Pages\ManageSettings;
+use App\Filament\Resources\FraudFlags\Pages\ListFraudFlags;
+use App\Filament\Resources\Orders\Pages\ViewOrder;
+use App\Filament\Resources\Users\Pages\ViewUser;
+use App\Filament\Resources\Withdrawals\Pages\ListWithdrawals;
+use App\Models\FraudFlag;
+use App\Models\Order;
+use App\Models\SupportTicket;
+use App\Models\User;
+use App\Models\UserBankAccount;
+use App\Models\Withdrawal;
+use App\Services\Orders\OrderRewardService;
+use App\Services\WalletService;
+use App\Services\WithdrawalService;
+use Livewire\Livewire;
+
+beforeEach(function () {
+    $this->platform = shopeeWithDefaultRule();
+    $this->admin = User::factory()->admin()->create();
+    $this->actingAs($this->admin);
+});
+
+function fundedWithdrawal(int $amount = 100000): Withdrawal
+{
+    $user = User::factory()->create();
+    app(WalletService::class)->post($user, WalletTransactionType::Bonus, WalletBucket::Available, 500000);
+
+    return app(WithdrawalService::class)->request($user, UserBankAccount::factory()->for($user)->create(), $amount);
+}
+
+it('renders every admin page', function (string $path) {
+    $order = Order::factory()->for($this->platform)->create();
+    $withdrawal = fundedWithdrawal();
+    $ticket = SupportTicket::create(['user_id' => $withdrawal->user_id, 'type' => 'other', 'subject' => 'Hỏi', 'status' => 'open']);
+    $ticket->messages()->create(['user_id' => $withdrawal->user_id, 'message' => 'Xin chào']);
+
+    $path = strtr($path, ['{order}' => $order->id, '{withdrawal}' => $withdrawal->id, '{user}' => $withdrawal->user_id, '{ticket}' => $ticket->id]);
+
+    $this->get('/admin'.$path)->assertSuccessful();
+})->with([
+    '', '/withdrawals', '/withdrawals/{withdrawal}', '/orders', '/orders/{order}', '/users', '/users/{user}', '/users/{user}/edit',
+    '/user-levels', '/platforms', '/commission-rules', '/vouchers', '/post-categories', '/posts', '/posts/create',
+    '/support-tickets', '/support-tickets/{ticket}', '/fraud-flags', '/wallet-transactions', '/sync-logs', '/activity-logs', '/manage-settings',
+]);
+
+it('hides configuration from staff', function () {
+    $this->actingAs(User::factory()->create(['role' => 'staff']));
+
+    $this->get('/admin/withdrawals')->assertSuccessful();
+    $this->get('/admin/commission-rules')->assertForbidden();
+    $this->get('/admin/manage-settings')->assertForbidden();
+});
+
+it('marks a withdrawal as paid from the table', function () {
+    $withdrawal = fundedWithdrawal();
+
+    Livewire::test(ListWithdrawals::class)
+        ->callTableAction('markPaid', $withdrawal, data: ['bank_txn_ref' => 'FT999'])
+        ->assertHasNoTableActionErrors();
+
+    expect($withdrawal->fresh())
+        ->status->toBe(WithdrawalStatus::Paid)
+        ->bank_txn_ref->toBe('FT999')
+        ->reviewed_by->toBe($this->admin->id);
+});
+
+it('rejects a withdrawal and refunds the member', function () {
+    $withdrawal = fundedWithdrawal();
+
+    Livewire::test(ListWithdrawals::class)
+        ->callTableAction('reject', $withdrawal, data: ['reason' => 'Sai số tài khoản']);
+
+    expect($withdrawal->fresh()->status)->toBe(WithdrawalStatus::Rejected)
+        ->and($withdrawal->user->wallet->fresh()->available_balance)->toBe(500000);
+});
+
+it('approves an order from the order page', function () {
+    $buyer = User::factory()->create();
+    $order = Order::factory()->for($this->platform)->for($buyer)->create();
+    app(OrderRewardService::class)->createRewards($order);
+
+    Livewire::test(ViewOrder::class, ['record' => $order->id])
+        ->callAction('changeStatus', data: ['status' => 'approved', 'note' => 'Duyệt tay']);
+
+    expect($order->fresh()->status)->toBe(OrderStatus::Approved)
+        ->and($buyer->wallet->fresh()->available_balance)->toBe(28000);
+});
+
+it('assigns an unmatched order to a member and creates rewards', function () {
+    $buyer = User::factory()->create();
+    $order = Order::factory()->for($this->platform)->create(['user_id' => null]);
+
+    Livewire::test(ViewOrder::class, ['record' => $order->id])
+        ->callAction('assignUser', data: ['user_id' => $buyer->id]);
+
+    expect($order->fresh()->user_id)->toBe($buyer->id)
+        ->and($buyer->wallet->fresh()->pending_balance)->toBe(28000);
+});
+
+it('adjusts a member balance through the ledger', function () {
+    $user = User::factory()->create();
+
+    Livewire::test(ViewUser::class, ['record' => $user->id])
+        ->callAction('adjustBalance', data: ['bucket' => 'available', 'amount' => 15000, 'description' => 'Thưởng sự kiện']);
+
+    expect($user->wallet->fresh()->available_balance)->toBe(15000)
+        ->and($user->walletTransactions()->sole()->created_by)->toBe($this->admin->id);
+});
+
+it('saves settings', function () {
+    Livewire::test(ManageSettings::class)
+        ->set('data.withdraw_min', 20000)
+        ->call('save')
+        ->assertHasNoErrors();
+
+    expect(setting('withdraw_min'))->toBe(20000);
+});
+
+it('confirms a fraud flag and locks the member', function () {
+    $flag = FraudFlag::create(['user_id' => User::factory()->create()->id, 'reason' => 'shared_bank', 'score' => 80, 'status' => 'open']);
+
+    Livewire::test(ListFraudFlags::class)
+        ->callTableAction('confirm', $flag, data: ['lock_user' => true]);
+
+    expect($flag->fresh()->status)->toBe(FraudFlagStatus::Confirmed)
+        ->and($flag->user->fresh()->status)->toBe(UserStatus::Locked);
+});

@@ -1,0 +1,49 @@
+<x-layouts.dashboard title="Tài khoản nhận tiền">
+    <div class="grid gap-6 lg:grid-cols-[1fr_360px]">
+        <div class="space-y-3">
+            @forelse ($accounts as $account)
+                <div class="card flex items-center gap-4 p-4">
+                    <span class="grid size-11 shrink-0 place-items-center rounded-xl bg-stone-100 text-stone-600"><x-heroicon-o-building-library class="size-6" /></span>
+                    <div class="min-w-0 flex-1">
+                        <p class="font-semibold text-stone-900">{{ $account->bank_name }} @if ($account->is_default)<span class="ml-1 rounded-full bg-brand-50 px-2 py-0.5 text-xs font-medium text-brand-700">Mặc định</span>@endif</p>
+                        <p class="text-sm text-stone-600">{{ $account->account_number }} · {{ $account->account_name }}</p>
+                    </div>
+                    <div class="flex shrink-0 items-center gap-1">
+                        @unless ($account->is_default)
+                            <form method="POST" action="{{ route('dashboard.bank-accounts.default', $account) }}">
+                                @csrf
+                                <button type="submit" class="btn btn-ghost !px-3 !py-1.5 text-xs">Đặt mặc định</button>
+                            </form>
+                        @endunless
+                        <form method="POST" action="{{ route('dashboard.bank-accounts.destroy', $account) }}" onsubmit="return confirm('Xoá tài khoản nhận tiền này?')">
+                            @csrf
+                            @method('DELETE')
+                            <button type="submit" class="btn btn-ghost !px-2.5 text-red-600" aria-label="Xoá"><x-heroicon-o-trash class="size-5" /></button>
+                        </form>
+                    </div>
+                </div>
+            @empty
+                <x-empty-state icon="building-library" title="Chưa có tài khoản nhận tiền">Thêm tài khoản ngân hàng hoặc ví điện tử để rút tiền.</x-empty-state>
+            @endforelse
+        </div>
+
+        <form method="POST" action="{{ route('dashboard.bank-accounts.store') }}" class="card h-fit space-y-4 p-5">
+            @csrf
+            <p class="font-semibold text-stone-900">Thêm tài khoản</p>
+            <div>
+                <label for="bank_code" class="label">Ngân hàng / ví</label>
+                <select id="bank_code" name="bank_code" class="input" required>
+                    <option value="">Chọn ngân hàng</option>
+                    @foreach ($banks as $code => $name)
+                        <option value="{{ $code }}" @selected(old('bank_code') === $code)>{{ $name }}</option>
+                    @endforeach
+                </select>
+                @error('bank_code') <p class="field-error">{{ $message }}</p> @enderror
+            </div>
+            <x-form.input name="account_number" label="Số tài khoản / số điện thoại ví" inputmode="numeric" required />
+            <x-form.input name="account_name" label="Tên chủ tài khoản" hint="Viết đúng như trên thẻ, hệ thống tự chuyển thành chữ in hoa không dấu." required />
+            <p class="flex gap-2 text-xs text-stone-500"><x-heroicon-o-shield-check class="size-4 shrink-0" /> Tài khoản phải đứng tên bạn. Một tài khoản ngân hàng dùng cho nhiều tài khoản thành viên sẽ bị xem xét gian lận.</p>
+            <button type="submit" class="btn btn-primary w-full">Lưu tài khoản</button>
+        </form>
+    </div>
+</x-layouts.dashboard>
