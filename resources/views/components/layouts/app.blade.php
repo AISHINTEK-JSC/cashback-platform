@@ -23,13 +23,22 @@
     <meta name="description" content="{{ $description ?? 'Dán link sản phẩm, mua như bình thường và nhận lại tiền hoàn cho mỗi đơn hàng Shopee, TikTok Shop, Lazada.' }}">
     <meta name="theme-color" content="#e04412">
     <link rel="icon" href="/favicon.ico">
+    {{-- Áp theme trước khi vẽ trang để không bị chớp sáng; dùng chung khoá "theme" với Filament --}}
+    <script>
+        (() => {
+            let theme = null;
+            try { theme = localStorage.getItem('theme'); } catch {}
+            const isDark = theme === 'dark' || (theme !== 'light' && window.matchMedia('(prefers-color-scheme: dark)').matches);
+            document.documentElement.classList.toggle('dark', isDark);
+        })();
+    </script>
     @fonts
     @vite(['resources/css/app.css', 'resources/js/app.js'])
     @livewireStyles
     {{ $head ?? '' }}
 </head>
 <body class="flex min-h-screen flex-col">
-    <header x-data="{ open: false }" class="sticky top-0 z-40 border-b border-stone-200 bg-white/90 backdrop-blur">
+    <header x-data="{ open: false }" class="sticky top-0 z-40 border-b border-stone-200 bg-surface/90 backdrop-blur">
         <div class="container-page flex h-16 items-center gap-6">
             <a href="{{ route('home') }}" class="flex items-center gap-2 font-bold text-stone-900">
                 <span class="grid size-9 place-items-center rounded-xl bg-brand-600 text-white">
@@ -49,6 +58,10 @@
             </nav>
 
             <div class="ml-auto flex items-center gap-2">
+                <button type="button" x-data="themeToggle" @click="toggle()" class="btn btn-ghost !px-2.5" :aria-label="isDark ? 'Chuyển sang giao diện sáng' : 'Chuyển sang giao diện tối'" :title="isDark ? 'Giao diện sáng' : 'Giao diện tối'" aria-label="Đổi giao diện sáng/tối">
+                    <x-heroicon-o-moon class="size-5" x-show="!isDark" />
+                    <x-heroicon-o-sun class="size-5" x-show="isDark" x-cloak />
+                </button>
                 @auth
                     <a href="{{ route('dashboard.notifications.index') }}" class="btn btn-ghost relative !px-2.5" aria-label="Thông báo">
                         <x-heroicon-o-bell class="size-5" />
@@ -79,7 +92,7 @@
             </div>
         </div>
 
-        <nav x-show="open" x-cloak x-transition class="border-t border-stone-200 bg-white lg:hidden">
+        <nav x-show="open" x-cloak x-transition class="border-t border-stone-200 bg-surface lg:hidden">
             <div class="container-page flex flex-col py-2">
                 @foreach ($nav as $item)
                     <a href="{{ route($item['route']) }}" class="rounded-lg px-3 py-2.5 font-medium text-stone-700 hover:bg-stone-100">{{ $item['label'] }}</a>
@@ -95,7 +108,7 @@
         {{ $slot }}
     </main>
 
-    <footer class="mt-16 border-t border-stone-200 bg-white">
+    <footer class="mt-16 border-t border-stone-200 bg-surface">
         <div class="container-page grid gap-8 py-10 sm:grid-cols-2 lg:grid-cols-4">
             <div class="sm:col-span-2">
                 <p class="font-bold text-stone-900">{{ $siteName }}</p>

@@ -2,7 +2,7 @@
     {{-- Hero: dán link lấy link hoàn tiền --}}
     <section class="relative overflow-hidden border-b border-stone-200 bg-gradient-to-b from-brand-50 to-stone-50">
         <div class="container-page py-14 text-center sm:py-20">
-            <p class="inline-flex items-center gap-2 rounded-full bg-white px-3 py-1 text-sm font-medium text-brand-700 ring-1 ring-brand-200">
+            <p class="inline-flex items-center gap-2 rounded-full bg-surface px-3 py-1 text-sm font-medium text-brand-700 ring-1 ring-brand-200">
                 <x-heroicon-o-sparkles class="size-4" /> Hoàn tiền thật cho mọi đơn hợp lệ
             </p>
             <h1 class="mx-auto mt-5 max-w-3xl text-4xl font-bold tracking-tight text-balance text-stone-900 sm:text-5xl">
@@ -17,7 +17,7 @@
             @if ($platforms->isNotEmpty())
                 <div class="mt-6 flex flex-wrap items-center justify-center gap-3 text-sm text-stone-600">
                     @foreach ($platforms as $platform)
-                        <span class="inline-flex items-center gap-2 rounded-full bg-white px-3 py-1.5 ring-1 ring-stone-200">
+                        <span class="inline-flex items-center gap-2 rounded-full bg-surface px-3 py-1.5 ring-1 ring-stone-200">
                             <x-platform-badge :platform="$platform" />
                             @if ($platform->user_rate)
                                 nhận lại {{ rtrim(rtrim(number_format((float) $platform->user_rate, 2, ',', '.'), '0'), ',') }}% hoa hồng
@@ -113,10 +113,10 @@
 
     {{-- Giới thiệu bạn bè --}}
     <section class="container-page py-10">
-        <div class="grid items-center gap-6 rounded-2xl bg-stone-900 p-8 text-white md:grid-cols-[1fr_auto]">
+        <div class="grid items-center gap-6 rounded-2xl bg-ink p-8 text-white dark:ring-1 dark:ring-white/10 md:grid-cols-[1fr_auto]">
             <div>
                 <h2 class="text-2xl font-bold">Mời bạn bè, nhận thêm hoa hồng 2 tầng</h2>
-                <p class="mt-2 max-w-2xl text-stone-300">Mỗi đơn hàng của người bạn mời (F1) và người họ mời (F2) đều mang lại thêm hoa hồng cho bạn, trọn đời.</p>
+                <p class="mt-2 max-w-2xl text-white/70">Mỗi đơn hàng của người bạn mời (F1) và người họ mời (F2) đều mang lại thêm hoa hồng cho bạn, trọn đời.</p>
             </div>
             <a href="{{ auth()->check() ? route('dashboard.referrals.index') : route('register') }}" class="btn btn-primary">
                 <x-heroicon-o-users class="size-5" /> Lấy link giới thiệu

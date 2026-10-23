@@ -1,17 +1,17 @@
 <x-layouts.dashboard title="Tổng quan" :description="'Xin chào, '.$user->name.'! Đây là tình hình hoàn tiền của bạn.'">
     <div class="grid gap-4 lg:grid-cols-5">
-        <div class="relative overflow-hidden rounded-2xl bg-linear-to-br from-brand-500 to-brand-700 p-6 text-white shadow-lg shadow-brand-600/20 lg:col-span-3">
+        <div class="relative overflow-hidden rounded-2xl bg-linear-to-br from-brand-500 to-brand-700 dark:to-brand-600 p-6 text-white shadow-lg shadow-brand-600/20 lg:col-span-3">
             <div class="pointer-events-none absolute -top-16 -right-16 size-56 rounded-full bg-white/10"></div>
             <div class="pointer-events-none absolute -right-6 -bottom-24 size-48 rounded-full bg-white/5"></div>
 
-            <div class="relative flex items-center gap-2 text-sm font-medium text-brand-100">
+            <div class="relative flex items-center gap-2 text-sm font-medium text-white/80">
                 <x-heroicon-o-wallet class="size-5" />
                 Số dư có thể rút
             </div>
             <p class="relative mt-2 text-4xl font-bold tracking-tight tabular-nums">{{ vnd($wallet->available_balance) }}</p>
 
             <div class="relative mt-6 flex flex-wrap gap-2">
-                <a href="{{ route('dashboard.withdrawals.index') }}" class="btn bg-white text-brand-700 shadow-sm hover:bg-brand-50">
+                <a href="{{ route('dashboard.withdrawals.index') }}" class="btn bg-white text-brand-600 shadow-sm hover:bg-white/90">
                     <x-heroicon-o-banknotes class="size-5" /> Rút tiền
                 </a>
                 <a href="{{ route('dashboard.wallet.index') }}" class="btn bg-white/15 text-white ring-1 ring-white/25 hover:bg-white/25">
@@ -94,7 +94,7 @@
                         ['icon' => 'banknotes', 'title' => 'Nhận tiền hoàn', 'body' => 'Đơn hiện ở đây sau vài giờ, tiền về ví khi sàn chốt đơn.'],
                     ] as $step)
                         <li class="flex gap-3 rounded-xl bg-stone-50 p-4 sm:flex-col">
-                            <span class="grid size-10 shrink-0 place-items-center rounded-xl bg-white text-brand-600 shadow-sm ring-1 ring-stone-200">
+                            <span class="grid size-10 shrink-0 place-items-center rounded-xl bg-surface text-brand-600 shadow-sm ring-1 ring-stone-200">
                                 <x-dynamic-component :component="'heroicon-o-'.$step['icon']" class="size-5" />
                             </span>
                             <div>

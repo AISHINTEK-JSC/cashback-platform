@@ -2,7 +2,7 @@
     <div class="grid gap-6 xl:grid-cols-[380px_1fr]">
         <div class="space-y-4">
             <livewire:withdraw-form />
-            <a href="{{ route('dashboard.bank-accounts.index') }}" class="flex items-center gap-3 rounded-2xl border border-dashed border-stone-300 p-4 text-sm text-stone-600 transition hover:border-brand-300 hover:bg-white hover:text-stone-900">
+            <a href="{{ route('dashboard.bank-accounts.index') }}" class="flex items-center gap-3 rounded-2xl border border-dashed border-stone-300 p-4 text-sm text-stone-600 transition hover:border-brand-300 hover:bg-surface hover:text-stone-900">
                 <x-heroicon-o-building-library class="size-5 shrink-0 text-stone-400" />
                 <span class="flex-1">Quản lý tài khoản nhận tiền</span>
                 <x-heroicon-m-chevron-right class="size-5 text-stone-400" />

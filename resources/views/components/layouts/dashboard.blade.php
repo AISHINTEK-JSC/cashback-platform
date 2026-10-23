@@ -59,7 +59,7 @@
                                         <a href="{{ route($item['route']) }}" @if ($isActive) aria-current="page" @endif @class([
                                             'group relative flex shrink-0 items-center gap-3 rounded-xl px-3 py-2 text-sm font-medium whitespace-nowrap transition',
                                             'bg-brand-600 text-white shadow-sm lg:bg-brand-50 lg:text-brand-700 lg:shadow-none' => $isActive,
-                                            'border border-stone-200 bg-white text-stone-600 hover:text-stone-900 lg:border-0 lg:bg-transparent lg:hover:bg-white' => ! $isActive,
+                                            'border border-stone-200 bg-surface text-stone-600 hover:text-stone-900 lg:border-0 lg:bg-transparent lg:hover:bg-surface' => ! $isActive,
                                         ])>
                                             @if ($isActive)
                                                 <span class="absolute inset-y-2 -left-px hidden w-1 rounded-r-full bg-brand-600 lg:block"></span>
@@ -72,7 +72,7 @@
                                             @if (($item['count'] ?? 0) > 0)
                                                 <span @class([
                                                     'grid min-w-5 place-items-center rounded-full px-1.5 text-[11px] font-bold tabular-nums',
-                                                    'bg-white text-brand-700 lg:bg-brand-600 lg:text-white' => $isActive,
+                                                    'bg-white text-brand-600 lg:bg-brand-600 lg:text-white' => $isActive,
                                                     'bg-brand-600 text-white' => ! $isActive,
                                                 ])>{{ $item['count'] > 99 ? '99+' : $item['count'] }}</span>
                                             @endif
@@ -84,7 +84,7 @@
 
                         <form method="POST" action="{{ route('logout') }}" class="shrink-0 lg:border-t lg:border-stone-200 lg:pt-4">
                             @csrf
-                            <button type="submit" class="flex w-full items-center gap-3 rounded-xl border border-stone-200 bg-white px-3 py-2 text-sm font-medium whitespace-nowrap text-stone-600 transition hover:text-red-600 lg:border-0 lg:bg-transparent lg:hover:bg-red-50">
+                            <button type="submit" class="flex w-full items-center gap-3 rounded-xl border border-stone-200 bg-surface px-3 py-2 text-sm font-medium whitespace-nowrap text-stone-600 transition hover:text-red-600 lg:border-0 lg:bg-transparent lg:hover:bg-red-50">
                                 <x-heroicon-o-arrow-right-start-on-rectangle class="size-5" />
                                 Đăng xuất
                             </button>

@@ -20,4 +20,31 @@ document.addEventListener('alpine:init', () => {
             setTimeout(() => (this.copied = false), 2000);
         },
     }));
+
+    // Nút sáng/tối: lưu lựa chọn vào localStorage "theme"; chưa chọn thì theo hệ điều hành
+    window.Alpine.data('themeToggle', () => ({
+        isDark: document.documentElement.classList.contains('dark'),
+        init() {
+            window.matchMedia('(prefers-color-scheme: dark)').addEventListener('change', (event) => {
+                let theme = null;
+                try {
+                    theme = localStorage.getItem('theme');
+                } catch {}
+
+                if (theme !== 'light' && theme !== 'dark') {
+                    this.apply(event.matches);
+                }
+            });
+        },
+        toggle() {
+            this.apply(!this.isDark);
+            try {
+                localStorage.setItem('theme', this.isDark ? 'dark' : 'light');
+            } catch {}
+        },
+        apply(isDark) {
+            this.isDark = isDark;
+            document.documentElement.classList.toggle('dark', isDark);
+        },
+    }));
 });

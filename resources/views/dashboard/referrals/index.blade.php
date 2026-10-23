@@ -1,23 +1,23 @@
 <x-layouts.dashboard title="Giới thiệu bạn bè" description="Nhận hoa hồng trên mỗi đơn của bạn bè (F1) và người do họ mời (F2).">
-    <div class="relative overflow-hidden rounded-2xl bg-linear-to-br from-brand-500 to-brand-700 p-5 text-white shadow-lg shadow-brand-600/20 sm:p-6">
+    <div class="relative overflow-hidden rounded-2xl bg-linear-to-br from-brand-500 to-brand-700 dark:to-brand-600 p-5 text-white shadow-lg shadow-brand-600/20 sm:p-6">
         <div class="pointer-events-none absolute -top-20 -right-12 size-60 rounded-full bg-white/10"></div>
 
         <div class="relative flex items-start gap-3">
             <span class="grid size-11 shrink-0 place-items-center rounded-xl bg-white/15"><x-heroicon-o-gift class="size-6" /></span>
             <div>
                 <p class="text-lg font-bold">Mời bạn bè, cùng nhận hoàn tiền</p>
-                <p class="text-sm text-brand-100">Chia sẻ link hoặc mã dưới đây. Bạn bè đăng ký và mua hàng, bạn nhận hoa hồng tự động.</p>
+                <p class="text-sm text-white/80">Chia sẻ link hoặc mã dưới đây. Bạn bè đăng ký và mua hàng, bạn nhận hoa hồng tự động.</p>
             </div>
         </div>
 
         <div class="relative mt-5 grid gap-3 sm:grid-cols-[1fr_auto]">
-            <div class="flex items-center gap-2 rounded-xl bg-white p-2 pl-3 text-stone-900">
+            <div class="flex items-center gap-2 rounded-xl bg-surface p-2 pl-3 text-stone-900">
                 <x-heroicon-o-link class="size-5 shrink-0 text-stone-400" />
                 <span class="min-w-0 flex-1 truncate font-mono text-sm">{{ $user->referralUrl() }}</span>
                 <x-copy-button :text="$user->referralUrl()" label="Copy link" class="!py-2" />
             </div>
             <div class="flex items-center gap-2 rounded-xl border border-dashed border-white/40 bg-white/10 p-2 pl-3">
-                <span class="text-sm text-brand-100">Mã:</span>
+                <span class="text-sm text-white/80">Mã:</span>
                 <span class="font-mono font-bold tracking-widest">{{ $user->referral_code }}</span>
                 <x-copy-button :text="$user->referral_code" label="Copy" class="!border-0 !bg-white/15 !py-2 !text-white hover:!bg-white/25" />
             </div>

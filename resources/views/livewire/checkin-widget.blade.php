@@ -24,10 +24,10 @@
             <li wire:key="day-{{ $day['day'] }}" @class([
                 'flex min-w-0 flex-col items-center rounded-xl border px-0.5 py-2 text-center transition',
                 'border-brand-200 bg-brand-50 text-brand-700' => $day['done'],
-                'border-brand-500 bg-white text-brand-700 ring-2 ring-brand-500/20' => $isNext,
+                'border-brand-500 bg-surface text-brand-700 ring-2 ring-brand-500/20' => $isNext,
                 'border-stone-200 text-stone-500' => ! $day['done'] && ! $isNext,
             ]) @if ($isNext) aria-current="date" @endif>
-                <span class="text-[10px] whitespace-nowrap">{{ $isNext ? 'Hôm nay' : 'Ngày '.$day['day'] }}</span>
+                <span class="text-[10px] whitespace-nowrap">Ngày {{ $day['day'] }}</span>
                 @if ($day['done'])
                     <x-heroicon-s-check-circle class="my-0.5 size-5" />
                 @else

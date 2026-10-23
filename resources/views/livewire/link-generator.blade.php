@@ -1,6 +1,6 @@
 <div>
     @if ($link)
-        <div class="rounded-2xl border border-emerald-200 bg-white p-4 text-left shadow-sm sm:p-5">
+        <div class="rounded-2xl border border-emerald-200 bg-surface p-4 text-left shadow-sm sm:p-5">
             <div class="flex items-start gap-4">
                 @if ($link->product_image)
                     <img src="{{ $link->product_image }}" alt="" class="size-20 shrink-0 rounded-xl object-cover">

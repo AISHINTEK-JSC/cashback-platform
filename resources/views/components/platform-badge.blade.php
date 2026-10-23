@@ -3,7 +3,7 @@
 @php
     $classes = match ($platform->code) {
         'shopee' => 'bg-[#ee4d2d] text-white',
-        'tiktok' => 'bg-stone-900 text-white',
+        'tiktok' => 'bg-ink text-white',
         'lazada' => 'bg-[#0f136d] text-white',
         default => 'bg-stone-200 text-stone-800',
     };

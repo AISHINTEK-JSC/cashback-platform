@@ -4,6 +4,9 @@
 @source '../../storage/framework/views/*.php';
 @source '../../app/Enums/*.php';
 
+/* Dark mode bật bằng class .dark trên <html> (xem script trong layouts/app.blade.php) */
+@custom-variant dark (&:where(.dark, .dark *));
+
 @theme inline {
     --font-sans: var(--font-be-vietnam-pro), ui-sans-serif, system-ui, sans-serif, 'Apple Color Emoji', 'Segoe UI Emoji';
 }
@@ -20,6 +23,79 @@
     --color-brand-700: #b93410;
     --color-brand-800: #932b14;
     --color-brand-900: #772714;
+
+    /* Nền thẻ/ô nhập: trắng ở chế độ sáng, xám đậm ở chế độ tối */
+    --color-surface: #fff;
+    /* Nền tối cố định, không đảo màu theo dark mode */
+    --color-ink: oklch(21.6% 0.006 56.043);
+}
+
+/*
+ * Dark mode: đảo thang màu thay vì thêm dark: vào từng class.
+ * Giữ nguyên các mức 400-600 (nền nút, icon) để chữ trắng trên nền cam vẫn đủ tương phản.
+ * Không đảo gray/blue vì view phân trang của Laravel đã có sẵn class dark: riêng.
+ */
+html.dark {
+    color-scheme: dark;
+
+    --color-surface: oklch(19.5% 0.005 56);
+
+    --color-stone-50: oklch(14.7% 0.004 49.25);
+    --color-stone-100: oklch(24.5% 0.006 56);
+    --color-stone-200: oklch(29% 0.007 56);
+    --color-stone-300: oklch(37.4% 0.01 67.558);
+    --color-stone-400: oklch(55.3% 0.013 58.071);
+    --color-stone-500: oklch(64% 0.012 58);
+    --color-stone-600: oklch(75% 0.01 58);
+    --color-stone-700: oklch(84% 0.007 56);
+    --color-stone-800: oklch(90% 0.005 56);
+    --color-stone-900: oklch(95% 0.003 56);
+    --color-stone-950: oklch(98.5% 0.001 106.423);
+
+    --color-brand-50: oklch(26% 0.05 40);
+    --color-brand-100: oklch(31% 0.07 40);
+    --color-brand-200: oklch(38% 0.1 40);
+    --color-brand-300: oklch(48% 0.14 40);
+    --color-brand-700: oklch(76% 0.13 45);
+    --color-brand-800: oklch(83% 0.1 50);
+    --color-brand-900: oklch(89% 0.07 55);
+
+    --color-emerald-50: oklch(26.2% 0.051 172.552);
+    --color-emerald-100: oklch(37.8% 0.077 168.94);
+    --color-emerald-200: oklch(43.2% 0.095 166.913);
+    --color-emerald-300: oklch(50.8% 0.118 165.612);
+    --color-emerald-700: oklch(84.5% 0.143 164.978);
+    --color-emerald-800: oklch(90.5% 0.093 164.15);
+    --color-emerald-900: oklch(95% 0.052 163.051);
+    --color-emerald-950: oklch(97.9% 0.021 166.113);
+
+    --color-red-50: oklch(25.8% 0.092 26.042);
+    --color-red-100: oklch(39.6% 0.141 25.723);
+    --color-red-200: oklch(44.4% 0.177 26.899);
+    --color-red-300: oklch(50.5% 0.213 27.518);
+    --color-red-600: oklch(70.4% 0.191 22.216);
+    --color-red-700: oklch(80.8% 0.114 19.571);
+    --color-red-800: oklch(88.5% 0.062 18.334);
+    --color-red-900: oklch(93.6% 0.032 17.717);
+    --color-red-950: oklch(97.1% 0.013 17.38);
+
+    --color-amber-50: oklch(27.9% 0.077 45.635);
+    --color-amber-100: oklch(41.4% 0.112 45.904);
+    --color-amber-200: oklch(47.3% 0.137 46.201);
+    --color-amber-300: oklch(55.5% 0.163 48.998);
+    --color-amber-700: oklch(87.9% 0.169 91.605);
+    --color-amber-800: oklch(92.4% 0.12 95.746);
+    --color-amber-900: oklch(96.2% 0.059 95.617);
+    --color-amber-950: oklch(98.7% 0.022 95.277);
+
+    --color-sky-50: oklch(29.3% 0.066 243.157);
+    --color-sky-100: oklch(39.1% 0.09 240.876);
+    --color-sky-200: oklch(44.3% 0.11 240.79);
+    --color-sky-300: oklch(50% 0.134 242.749);
+    --color-sky-700: oklch(82.8% 0.111 230.318);
+    --color-sky-800: oklch(90.1% 0.058 230.902);
+    --color-sky-900: oklch(95.1% 0.026 236.824);
+    --color-sky-950: oklch(97.7% 0.013 236.62);
 }
 
 @layer base {
@@ -38,7 +114,7 @@
     }
 
     .card {
-        @apply rounded-2xl border border-stone-200 bg-white shadow-sm;
+        @apply rounded-2xl border border-stone-200 bg-surface shadow-sm;
     }
 
     .btn {
@@ -46,11 +122,11 @@
     }
 
     .btn-primary {
-        @apply bg-brand-600 text-white hover:bg-brand-700;
+        @apply bg-brand-600 text-white hover:bg-brand-700 dark:hover:bg-brand-500;
     }
 
     .btn-secondary {
-        @apply border border-stone-300 bg-white text-stone-800 hover:bg-stone-100;
+        @apply border border-stone-300 bg-surface text-stone-800 hover:bg-stone-100;
     }
 
     .btn-ghost {
@@ -58,7 +134,7 @@
     }
 
     .btn-danger {
-        @apply bg-red-600 text-white hover:bg-red-700;
+        @apply bg-red-600 text-white hover:bg-red-700 dark:bg-red-500 dark:hover:bg-red-500/85;
     }
 
     .tabs {
@@ -70,7 +146,7 @@
     }
 
     .tab-active {
-        @apply bg-white text-stone-900 shadow-sm;
+        @apply bg-surface text-stone-900 shadow-sm;
     }
 
     .label {
@@ -78,7 +154,7 @@
     }
 
     .input {
-        @apply block w-full rounded-xl border border-stone-300 bg-white px-3.5 py-2.5 text-sm text-stone-900 placeholder:text-stone-400 focus:border-brand-500 focus:ring-2 focus:ring-brand-500/20 focus:outline-none;
+        @apply block w-full rounded-xl border border-stone-300 bg-surface px-3.5 py-2.5 text-sm text-stone-900 placeholder:text-stone-400 focus:border-brand-500 focus:ring-2 focus:ring-brand-500/20 focus:outline-none;
     }
 
     .field-error {

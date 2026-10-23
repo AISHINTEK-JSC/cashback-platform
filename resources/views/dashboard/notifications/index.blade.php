@@ -24,7 +24,7 @@
                     ])>
                         <x-heroicon-o-bell class="size-5" />
                         @if (! $notification->read_at)
-                            <span class="absolute top-0 right-0 size-2.5 rounded-full bg-brand-600 ring-2 ring-white"></span>
+                            <span class="absolute top-0 right-0 size-2.5 rounded-full bg-brand-600 ring-2 ring-surface"></span>
                         @endif
                     </span>
                     <div class="min-w-0 flex-1">

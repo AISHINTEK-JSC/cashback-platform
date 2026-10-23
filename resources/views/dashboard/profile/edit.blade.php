@@ -8,7 +8,7 @@
                 <p class="font-semibold text-stone-900">Thông tin cá nhân</p>
             </div>
             <div x-data="{ preview: null }" class="flex items-center gap-4 rounded-xl bg-stone-50 p-3">
-                <span class="grid size-16 shrink-0 place-items-center overflow-hidden rounded-full bg-brand-100 text-xl font-semibold text-brand-700 ring-4 ring-white">
+                <span class="grid size-16 shrink-0 place-items-center overflow-hidden rounded-full bg-brand-100 text-xl font-semibold text-brand-700 ring-4 ring-surface">
                     <img x-show="preview" x-cloak :src="preview" alt="" class="size-full object-cover">
                     @if ($user->avatar)
                         <img x-show="!preview" src="{{ $user->avatar }}" alt="" class="size-full object-cover">
