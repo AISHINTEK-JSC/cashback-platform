@@ -54,7 +54,7 @@ class PlatformResource extends Resource
                     ->label('Cấu hình API (được mã hoá)')
                     ->keyLabel('Khoá')
                     ->valueLabel('Giá trị')
-                    ->helperText('Shopee: app_id, secret. Lưu ý chọn driver thật trong biến môi trường AFFILIATE_*_DRIVER.')
+                    ->helperText('Shopee: app_id, secret. AccessTrade (tuỳ chọn): campaign_id, merchant để ghi đè mặc định. Lưu ý chọn driver thật trong biến môi trường AFFILIATE_*_DRIVER.')
                     ->columnSpanFull(),
             ]);
     }

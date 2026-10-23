@@ -19,6 +19,10 @@ fi
 
 mkdir -p storage/app/public storage/framework/cache/data storage/framework/sessions storage/framework/views storage/logs
 
+# storage là volume dùng lại qua các lần build: view compile từ image cũ có thể "mới" hơn file nguồn
+# (COPY giữ nguyên mtime) nên Laravel không tự compile lại. Xoá đi để luôn dùng view của image hiện tại.
+php artisan view:clear --no-interaction >/dev/null
+
 if [ "${CONTAINER_ROLE:-app}" = "app" ]; then
     echo "Đang chờ database..."
     attempts=0

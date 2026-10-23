@@ -3,6 +3,7 @@
 namespace App\Services\Affiliate;
 
 use App\Models\Platform;
+use App\Services\Affiliate\Drivers\AccessTradeDriver;
 use App\Services\Affiliate\Drivers\FakeDriver;
 use App\Services\Affiliate\Drivers\LazadaDriver;
 use App\Services\Affiliate\Drivers\ShopeeDriver;
@@ -22,6 +23,7 @@ class AffiliateManager
         'shopee' => ShopeeDriver::class,
         'tiktok' => TikTokDriver::class,
         'lazada' => LazadaDriver::class,
+        'accesstrade' => AccessTradeDriver::class,
     ];
 
     /**
