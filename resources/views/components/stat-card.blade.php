@@ -1,12 +1,23 @@
-@props(['label', 'value', 'hint' => null, 'tone' => 'default'])
+@props(['label', 'value', 'hint' => null, 'tone' => 'default', 'icon' => null])
 
 <div {{ $attributes->class([
-    'rounded-2xl border p-5',
-    'border-brand-600 bg-brand-600 text-white' => $tone === 'brand',
-    'border-stone-200 bg-white' => $tone !== 'brand',
+    'relative overflow-hidden rounded-2xl border p-5',
+    'border-brand-600 bg-linear-to-br from-brand-500 to-brand-700 text-white shadow-sm shadow-brand-600/20' => $tone === 'brand',
+    'border-stone-200 bg-white shadow-sm' => $tone !== 'brand',
 ]) }}>
-    <p @class(['text-sm', 'text-brand-100' => $tone === 'brand', 'text-stone-500' => $tone !== 'brand'])>{{ $label }}</p>
-    <p class="mt-1 text-2xl font-bold tabular-nums">{{ $value }}</p>
+    <div class="flex items-start justify-between gap-3">
+        <p @class(['text-sm font-medium', 'text-brand-100' => $tone === 'brand', 'text-stone-500' => $tone !== 'brand'])>{{ $label }}</p>
+        @if ($icon)
+            <span @class([
+                'grid size-9 shrink-0 place-items-center rounded-xl',
+                'bg-white/15 text-white' => $tone === 'brand',
+                'bg-stone-100 text-stone-500' => $tone !== 'brand',
+            ])>
+                <x-dynamic-component :component="'heroicon-o-'.$icon" class="size-5" />
+            </span>
+        @endif
+    </div>
+    <p @class(['text-2xl font-bold tracking-tight tabular-nums', 'mt-1' => ! $icon, '-mt-1' => $icon])>{{ $value }}</p>
     @if ($hint)
         <p @class(['mt-1 text-xs', 'text-brand-100' => $tone === 'brand', 'text-stone-500' => $tone !== 'brand'])>{{ $hint }}</p>
     @endif
