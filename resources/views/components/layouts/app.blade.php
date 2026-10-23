@@ -1,7 +1,10 @@
-@props(['title' => null, 'description' => null])
+@props(['title' => null, 'description' => null, 'image' => null, 'type' => 'website'])
 
 @php
     $siteName = setting('site_name');
+    $pageTitle = $title ? $title.' - '.$siteName : $siteName.' - Hoàn tiền khi mua sắm Shopee, TikTok Shop, Lazada';
+    $pageDescription = $description ?: 'Dán link sản phẩm, mua như bình thường và nhận lại tiền hoàn cho mỗi đơn hàng Shopee, TikTok Shop, Lazada.';
+    $shareImage = $image ? url($image) : asset('images/og-default.png');
     $user = auth()->user();
     $unread = $user?->unreadNotifications()->count() ?? 0;
     $nav = [
@@ -19,10 +22,32 @@
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <meta name="csrf-token" content="{{ csrf_token() }}">
-    <title>{{ $title ? $title.' - '.$siteName : $siteName.' - Hoàn tiền khi mua sắm Shopee, TikTok Shop, Lazada' }}</title>
-    <meta name="description" content="{{ $description ?? 'Dán link sản phẩm, mua như bình thường và nhận lại tiền hoàn cho mỗi đơn hàng Shopee, TikTok Shop, Lazada.' }}">
+    <title>{{ $pageTitle }}</title>
+    <meta name="description" content="{{ $pageDescription }}">
+    <link rel="canonical" href="{{ url()->current() }}">
     <meta name="theme-color" content="#e04412">
-    <link rel="icon" href="/favicon.ico">
+    <link rel="icon" href="/favicon.ico" sizes="48x48">
+    <link rel="icon" href="/favicon.svg" type="image/svg+xml">
+    <link rel="apple-touch-icon" href="/apple-touch-icon.png">
+    <link rel="manifest" href="/site.webmanifest">
+
+    {{-- Thẻ chia sẻ cho Facebook, Zalo, Messenger, X --}}
+    <meta property="og:site_name" content="{{ $siteName }}">
+    <meta property="og:locale" content="vi_VN">
+    <meta property="og:type" content="{{ $type }}">
+    <meta property="og:title" content="{{ $title ?: $pageTitle }}">
+    <meta property="og:description" content="{{ $pageDescription }}">
+    <meta property="og:url" content="{{ url()->current() }}">
+    <meta property="og:image" content="{{ $shareImage }}">
+    <meta property="og:image:alt" content="{{ $title ?: $siteName }}">
+    @unless ($image)
+        <meta property="og:image:width" content="1200">
+        <meta property="og:image:height" content="630">
+    @endunless
+    <meta name="twitter:card" content="summary_large_image">
+    <meta name="twitter:title" content="{{ $title ?: $pageTitle }}">
+    <meta name="twitter:description" content="{{ $pageDescription }}">
+    <meta name="twitter:image" content="{{ $shareImage }}">
     {{-- Áp theme trước khi vẽ trang để không bị chớp sáng; dùng chung khoá "theme" với Filament --}}
     <script>
         (() => {

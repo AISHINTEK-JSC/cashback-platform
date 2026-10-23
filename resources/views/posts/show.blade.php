@@ -1,13 +1,9 @@
-<x-layouts.app :title="$post->meta_title ?: $post->title" :description="$post->meta_description ?: $post->excerpt">
-    <x-slot:head>
-        <meta property="og:title" content="{{ $post->meta_title ?: $post->title }}">
-        <meta property="og:description" content="{{ $post->meta_description ?: $post->excerpt }}">
-        <meta property="og:type" content="article">
-        @if ($post->thumbnail)
-            <meta property="og:image" content="{{ $post->thumbnailUrl() }}">
-        @endif
-        <link rel="canonical" href="{{ route('posts.show', $post) }}">
-    </x-slot:head>
+<x-layouts.app :title="$post->meta_title ?: $post->title" :description="$post->meta_description ?: $post->excerpt" :image="$post->thumbnailUrl()" type="article">
+    @if ($post->published_at)
+        <x-slot:head>
+            <meta property="article:published_time" content="{{ $post->published_at->toIso8601String() }}">
+        </x-slot:head>
+    @endif
 
     <article class="container-page max-w-3xl py-10">
         <nav class="text-sm text-stone-500">

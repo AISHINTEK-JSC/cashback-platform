@@ -27,6 +27,29 @@ it('renders a published post and hides drafts', function () {
     $this->get(route('posts.show', $draft))->assertNotFound();
 });
 
+it('shares pages with the default open graph image and favicons', function () {
+    $this->get(route('rates'))
+        ->assertSee('<meta property="og:title" content="Tỷ lệ hoàn tiền">', false)
+        ->assertSee('<meta property="og:image" content="'.asset('images/og-default.png').'">', false)
+        ->assertSee('<meta name="twitter:card" content="summary_large_image">', false)
+        ->assertSee('<link rel="icon" href="/favicon.svg" type="image/svg+xml">', false)
+        ->assertSee('<link rel="canonical" href="'.route('rates').'">', false);
+
+    expect(public_path('images/og-default.png'))->toBeFile()
+        ->and(public_path('favicon.ico'))->toBeFile()
+        ->and(filesize(public_path('favicon.ico')))->toBeGreaterThan(0);
+});
+
+it('shares a post as an article with its thumbnail', function () {
+    $post = Post::factory()->create(['thumbnail' => 'posts/cover.jpg']);
+
+    $this->get(route('posts.show', $post))
+        ->assertSee('<meta property="og:type" content="article">', false)
+        ->assertSee('<meta property="og:image" content="'.$post->thumbnailUrl().'">', false)
+        ->assertSee('<meta property="article:published_time"', false)
+        ->assertDontSee('images/og-default.png');
+});
+
 it('requires login for the dashboard', function () {
     $this->get(route('dashboard.index'))->assertRedirect(route('login'));
 });
