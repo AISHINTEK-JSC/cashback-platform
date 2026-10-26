@@ -10,10 +10,13 @@ use App\Filament\Pages\ManageSettings;
 use App\Filament\Resources\FraudFlags\Pages\ListFraudFlags;
 use App\Filament\Resources\Orders\Pages\ViewOrder;
 use App\Filament\Resources\Platforms\Pages\ManagePlatforms;
+use App\Filament\Resources\Posts\Pages\CreatePost;
+use App\Filament\Resources\Posts\Pages\EditPost;
 use App\Filament\Resources\Users\Pages\ViewUser;
 use App\Filament\Resources\Withdrawals\Pages\ListWithdrawals;
 use App\Models\FraudFlag;
 use App\Models\Order;
+use App\Models\Post;
 use App\Models\Setting;
 use App\Models\SupportTicket;
 use App\Models\User;
@@ -170,4 +173,34 @@ it('confirms a fraud flag and locks the member', function () {
 
     expect($flag->fresh()->status)->toBe(FraudFlagStatus::Confirmed)
         ->and($flag->user->fresh()->status)->toBe(UserStatus::Locked);
+});
+
+it('writes a blog post from the admin panel and publishes it right away', function () {
+    Livewire::test(CreatePost::class)
+        ->fillForm([
+            'title' => 'Mẹo săn sale cuối năm',
+            'slug' => 'meo-san-sale-cuoi-nam',
+            'content' => '<h2>Chuẩn bị</h2><p>Lập danh sách trước.</p>',
+            'status' => 'published',
+            'published_at' => null,
+        ])
+        ->call('create')
+        ->assertHasNoFormErrors();
+
+    $post = Post::query()->where('slug', 'meo-san-sale-cuoi-nam')->sole();
+
+    expect($post->author_id)->toBe($this->admin->id)
+        ->and($post->isPublished())->toBeTrue();
+
+    $this->get(route('posts.show', $post))->assertSuccessful()->assertSee('Mẹo săn sale cuối năm')->assertDontSee('Đang xem trước');
+    $this->get(route('sitemap'))->assertSee(route('posts.show', $post));
+});
+
+it('shows seo length hints and a preview link when editing a post', function () {
+    $post = Post::factory()->create(['status' => 'draft', 'title' => 'Bài nháp', 'meta_description' => str_repeat('a', 170)]);
+
+    Livewire::test(EditPost::class, ['record' => $post->getRouteKey()])
+        ->assertSee('Mô tả trên Google: 170/160 ký tự, dài quá')
+        ->assertActionExists('open')
+        ->assertActionHasLabel('open', 'Xem trước');
 });

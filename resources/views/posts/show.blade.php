@@ -1,4 +1,4 @@
-<x-layouts.app :title="$post->meta_title ?: $post->title" :description="$post->meta_description ?: $post->excerpt" :image="$post->thumbnailUrl()" type="article">
+<x-layouts.app :title="$post->meta_title ?: $post->title" :description="$post->meta_description ?: $post->excerpt" :image="$post->thumbnailUrl()" type="article" :noindex="$isPreview">
     <x-slot:head>
         @if ($post->published_at)
             <meta property="article:published_time" content="{{ $post->published_at->toIso8601String() }}">
@@ -27,6 +27,12 @@
             ],
         ]" />
     </x-slot:head>
+
+    @if ($isPreview)
+        <div class="border-b border-amber-200 bg-amber-50 py-2.5 text-center text-sm font-medium text-amber-800 dark:border-amber-900 dark:bg-amber-950 dark:text-amber-200">
+            Đang xem trước: {{ $post->isScheduled() ? 'bài hẹn giờ đăng lúc '.$post->published_at->format('H:i d/m/Y') : 'bản nháp' }}, chỉ quản trị viên nhìn thấy.
+        </div>
+    @endif
 
     <article class="container-page max-w-3xl py-10">
         <nav class="text-sm text-stone-500">

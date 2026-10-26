@@ -28,12 +28,17 @@ class PostController extends Controller
 
     public function show(Post $post): View
     {
-        abort_unless(Post::query()->published()->whereKey($post->id)->exists(), 404);
+        // Bản nháp, bài hẹn giờ chỉ quản trị viên/nhân viên xem trước được
+        $isPreview = ! $post->isPublished();
+        abort_if($isPreview && ! auth()->user()?->isStaff(), 404);
 
-        $post->incrementQuietly('view_count');
+        if (! $isPreview) {
+            $post->incrementQuietly('view_count');
+        }
 
         return view('posts.show', [
             'post' => $post->load('category', 'author'),
+            'isPreview' => $isPreview,
             'related' => Post::query()->published()->with('category')
                 ->whereKeyNot($post->id)
                 ->when($post->category_id, fn ($q) => $q->where('category_id', $post->category_id))

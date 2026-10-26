@@ -118,7 +118,7 @@ it('seeds the starter blog posts once without overwriting edits', function () {
 
     $this->seed(BlogPostSeeder::class);
 
-    expect(Post::query()->published()->count())->toBe(5)
+    expect(Post::query()->published()->count())->toBe(17)
         ->and($post->fresh()->title)->toBe('Đã sửa');
 
     $this->get(route('posts.show', 'cach-san-ma-giam-gia-shopee'))

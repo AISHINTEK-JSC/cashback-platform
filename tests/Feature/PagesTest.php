@@ -48,6 +48,24 @@ it('renders a published post and hides drafts', function () {
     $this->get(route('posts.show', $draft))->assertNotFound();
 });
 
+it('lets staff preview drafts and scheduled posts without counting views', function () {
+    $draft = Post::factory()->create(['status' => 'draft']);
+    $scheduled = Post::factory()->create(['published_at' => now()->addDay()]);
+
+    $this->get(route('posts.show', $scheduled))->assertNotFound();
+    $this->actingAs(User::factory()->create())->get(route('posts.show', $draft))->assertNotFound();
+
+    $this->actingAs(User::factory()->admin()->create());
+
+    $this->get(route('posts.show', $draft))
+        ->assertSuccessful()
+        ->assertSee('Đang xem trước: bản nháp')
+        ->assertSee('<meta name="robots" content="noindex, follow">', false);
+    $this->get(route('posts.show', $scheduled))->assertSee('bài hẹn giờ đăng lúc');
+
+    expect($draft->fresh()->view_count)->toBe(0);
+});
+
 it('shares pages with the default open graph image and favicons', function () {
     $this->get(route('rates'))
         ->assertSee('<meta property="og:title" content="Tỷ lệ hoàn tiền">', false)
