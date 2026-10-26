@@ -45,7 +45,7 @@ class SeoController extends Controller
                 ['loc' => route('pages.privacy'), 'priority' => '0.3', 'changefreq' => 'yearly'],
             ]);
 
-            return view('seo.sitemap', ['urls' => $urls])->render();
+            return '<?xml version="1.0" encoding="UTF-8"?>'."\n".view('seo.sitemap', ['urls' => $urls])->render();
         });
 
         return response($xml, 200, ['Content-Type' => 'application/xml; charset=UTF-8']);

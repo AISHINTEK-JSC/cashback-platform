@@ -19,7 +19,7 @@ it('lists public pages, platform voucher pages and published posts in the sitema
     $draft = Post::factory()->create(['status' => 'draft']);
     Platform::factory()->code('lazada', 'Lazada')->create(['is_active' => false]);
 
-    $this->get(route('sitemap'))
+    $response = $this->get(route('sitemap'))
         ->assertSuccessful()
         ->assertHeader('Content-Type', 'application/xml; charset=UTF-8')
         ->assertSee('<loc>'.route('vouchers.platform', $this->platform).'</loc>', false)
@@ -28,6 +28,9 @@ it('lists public pages, platform voucher pages and published posts in the sitema
         ->assertSee('<loc>'.route('pages.guide').'</loc>', false)
         ->assertDontSee(route('posts.show', $draft))
         ->assertDontSee('/ma-giam-gia/lazada');
+
+    expect($response->getContent())->toStartWith('<?xml version="1.0" encoding="UTF-8"?>'."\n<urlset")
+        ->and(simplexml_load_string($response->getContent()))->not->toBeFalse();
 });
 
 it('points crawlers to the sitemap and keeps them out of private pages', function () {
