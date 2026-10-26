@@ -7,6 +7,7 @@ use App\Models\User;
 use App\Models\Voucher;
 use App\Support\Settings;
 use Database\Seeders\BlogPostSeeder;
+use Illuminate\Support\Facades\Storage;
 
 beforeEach(function () {
     $this->withoutVite();
@@ -127,11 +128,15 @@ it('keeps the page number in the canonical url of paginated pages', function () 
 
 it('seeds the starter blog posts once without overwriting edits', function () {
     User::factory()->admin()->create();
+    Storage::fake('uploads');
+    Storage::disk('uploads')->put('posts/hoan-tien-la-gi.jpg', 'jpg');
 
     $this->seed(BlogPostSeeder::class);
 
     $post = Post::query()->where('slug', 'hoan-tien-la-gi')->sole();
-    expect($post->thumbnail)->toBe('/images/posts/hoan-tien-la-gi.jpg');
+    expect($post->thumbnail)->toBe('posts/hoan-tien-la-gi.jpg')
+        ->and($post->thumbnailUrl())->toBe(Storage::disk('uploads')->url('posts/hoan-tien-la-gi.jpg'))
+        ->and(Post::query()->where('slug', 'meo-san-flash-sale-shopee')->value('thumbnail'))->toBeNull();
     $post->update(['title' => 'Đã sửa', 'thumbnail' => null]);
     $edited = Post::query()->where('slug', 'shopee-xu-la-gi')->sole();
     $edited->update(['thumbnail' => 'posts/anh-tu-chon.jpg']);
@@ -140,12 +145,8 @@ it('seeds the starter blog posts once without overwriting edits', function () {
 
     expect(Post::query()->published()->count())->toBe(17)
         ->and($post->fresh()->title)->toBe('Đã sửa')
-        ->and($post->fresh()->thumbnail)->toBe('/images/posts/hoan-tien-la-gi.jpg')
+        ->and($post->fresh()->thumbnail)->toBe('posts/hoan-tien-la-gi.jpg')
         ->and($edited->fresh()->thumbnail)->toBe('posts/anh-tu-chon.jpg');
-
-    foreach (Post::query()->where('thumbnail', 'like', '/images/posts/%')->pluck('thumbnail') as $thumbnail) {
-        expect(public_path(ltrim($thumbnail, '/')))->toBeFile();
-    }
 
     $this->get(route('posts.show', 'cach-san-ma-giam-gia-shopee'))
         ->assertSuccessful()

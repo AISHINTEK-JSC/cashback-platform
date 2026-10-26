@@ -47,6 +47,33 @@ return [
             'report' => false,
         ],
 
+        /*
+        | File người dùng tải lên (ảnh bài viết, logo sàn, ảnh đại diện, đính kèm ticket).
+        | Host (Render) xoá ổ đĩa mỗi lần deploy/restart nên production lưu lên Cloudflare R2:
+        | UPLOADS_DRIVER=s3. Mặc định lưu trên máy như disk "public".
+        */
+        'uploads' => env('UPLOADS_DRIVER', 'local') === 's3' ? [
+            'driver' => 's3',
+            'key' => env('R2_ACCESS_KEY_ID'),
+            'secret' => env('R2_SECRET_ACCESS_KEY'),
+            'region' => 'auto',
+            'bucket' => env('R2_BUCKET'),
+            'endpoint' => env('R2_ENDPOINT'),
+            'url' => env('R2_PUBLIC_URL'),
+            'use_path_style_endpoint' => true,
+            // Tên file tải lên là chuỗi ngẫu nhiên, không ghi đè nên cho trình duyệt cache lâu
+            'options' => ['CacheControl' => 'public, max-age=31536000, immutable'],
+            'throw' => false,
+            'report' => true,
+        ] : [
+            'driver' => 'local',
+            'root' => storage_path('app/public'),
+            'url' => rtrim(env('APP_URL', 'http://localhost'), '/').'/storage',
+            'visibility' => 'public',
+            'throw' => false,
+            'report' => false,
+        ],
+
         's3' => [
             'driver' => 's3',
             'key' => env('AWS_ACCESS_KEY_ID'),

@@ -15,7 +15,7 @@
                     <p @class(['text-xs font-semibold', 'text-white/80' => $mine, 'text-brand-700' => ! $mine])>{{ $mine ? 'Bạn' : 'Hỗ trợ viên' }} · {{ $message->created_at?->format('d/m H:i') }}</p>
                     <p class="mt-1 text-sm whitespace-pre-line">{{ $message->message }}</p>
                     @foreach ($message->attachments ?? [] as $path)
-                        <a href="{{ \Illuminate\Support\Facades\Storage::disk('public')->url($path) }}" target="_blank" class="mt-2 block"><img src="{{ \Illuminate\Support\Facades\Storage::disk('public')->url($path) }}" alt="" class="max-h-48 rounded-lg"></a>
+                        <a href="{{ \Illuminate\Support\Facades\Storage::disk('uploads')->url($path) }}" target="_blank" class="mt-2 block"><img src="{{ \Illuminate\Support\Facades\Storage::disk('uploads')->url($path) }}" alt="" class="max-h-48 rounded-lg"></a>
                     @endforeach
                 </div>
             </div>

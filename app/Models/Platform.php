@@ -59,7 +59,7 @@ class Platform extends Model
     public function logoUrl(): ?string
     {
         if ($this->logo) {
-            return Storage::disk('public')->url($this->logo);
+            return Storage::disk('uploads')->url($this->logo);
         }
 
         return file_exists(public_path("images/platforms/{$this->code}.png")) ? asset("images/platforms/{$this->code}.png") : null;

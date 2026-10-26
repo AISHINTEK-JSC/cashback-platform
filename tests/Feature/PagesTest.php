@@ -7,6 +7,8 @@ use App\Models\Post;
 use App\Models\SupportTicket;
 use App\Models\User;
 use App\Models\Voucher;
+use Illuminate\Http\UploadedFile;
+use Illuminate\Support\Facades\Storage;
 
 beforeEach(function () {
     $this->withoutVite();
@@ -128,4 +130,28 @@ it('opens a missing order ticket', function () {
     expect($ticket->messages)->toHaveCount(1);
 
     $this->actingAs($user)->get(route('dashboard.tickets.show', $ticket))->assertSuccessful()->assertSee('Thiếu đơn ngày 30/9');
+});
+
+it('stores member uploads on the uploads disk', function () {
+    Storage::fake('uploads');
+    $user = User::factory()->create();
+
+    $this->actingAs($user)->put(route('dashboard.profile.update'), [
+        'name' => $user->name,
+        'email' => $user->email,
+        'avatar' => UploadedFile::fake()->image('avatar.jpg'),
+    ])->assertSessionHasNoErrors();
+
+    $this->actingAs($user)->post(route('dashboard.tickets.store'), [
+        'type' => 'missing_order',
+        'platform_id' => $this->platform->id,
+        'platform_order_id' => '240930ABC',
+        'subject' => 'Thiếu đơn',
+        'message' => 'Kèm ảnh chụp đơn.',
+        'attachments' => [UploadedFile::fake()->image('don-hang.jpg')],
+    ])->assertSessionHasNoErrors();
+
+    $avatarPath = str($user->fresh()->avatar)->after('/storage/')->toString();
+    Storage::disk('uploads')->assertExists($avatarPath);
+    Storage::disk('uploads')->assertExists(SupportTicket::sole()->messages()->sole()->attachments[0]);
 });

@@ -64,7 +64,7 @@ class PostResource extends Resource
                                 ->helperText('Không dấu, nối bằng gạch ngang, nên chứa từ khoá chính. Hạn chế đổi sau khi đã đăng vì link cũ sẽ hỏng.'),
                             Textarea::make('excerpt')->label('Tóm tắt')->rows(2)->maxLength(500)
                                 ->helperText('Hiện ở danh sách bài viết, dùng làm mô tả khi chia sẻ nếu bỏ trống meta description.'),
-                            RichEditor::make('content')->label('Nội dung')->required()->fileAttachmentsDisk('public')->fileAttachmentsDirectory('posts/content')
+                            RichEditor::make('content')->label('Nội dung')->required()->fileAttachmentsDisk('uploads')->fileAttachmentsVisibility('public')->fileAttachmentsDirectory('posts/content')
                                 ->helperText('Chia bài bằng Tiêu đề 2, Tiêu đề 3; chèn link tới bài liên quan, trang mã giảm giá, tỷ lệ hoàn tiền để giữ người đọc ở lại lâu hơn.'),
                         ]),
                         Section::make('SEO')
@@ -89,7 +89,7 @@ class PostResource extends Resource
                                 TextInput::make('name')->label('Tên')->required(),
                                 TextInput::make('slug')->label('Đường dẫn')->required()->alphaDash(),
                             ]),
-                            FileUpload::make('thumbnail')->label('Ảnh đại diện')->image()->disk('public')->directory('posts')
+                            FileUpload::make('thumbnail')->label('Ảnh đại diện')->image()->disk('uploads')->visibility('public')->directory('posts')
                                 ->imageEditor()->imageEditorAspectRatioOptions(['1.91:1', '16:9', null])->maxSize(4096)
                                 ->helperText('Nên dùng ảnh ngang 1200×630 để hiển thị đẹp khi chia sẻ. Bỏ trống thì dùng ảnh mặc định của website.'),
                         ]),
@@ -102,7 +102,7 @@ class PostResource extends Resource
         return $table
             ->defaultSort('id', 'desc')
             ->columns([
-                ImageColumn::make('thumbnail')->label('')->disk('public')->square(),
+                ImageColumn::make('thumbnail')->label('')->disk('uploads')->visibility('public')->square(),
                 TextColumn::make('title')->label('Tiêu đề')->searchable()->limit(60),
                 TextColumn::make('category.name')->label('Danh mục')->placeholder('-'),
                 TextColumn::make('status')->label('Trạng thái')->badge()

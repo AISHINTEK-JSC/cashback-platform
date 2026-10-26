@@ -64,7 +64,7 @@ class PlatformResource extends Resource
                     ->helperText('Trang chủ hiển thị "Hoàn đến" = mức này × % chia cho người mua. Để trống thì không hiện.'),
                 Toggle::make('is_active')->label('Đang bật')->inline(false),
                 Toggle::make('is_coming_soon')->label('Hiển thị "Sắp ra mắt" khi chưa bật')->inline(false),
-                FileUpload::make('logo')->label('Logo')->helperText('Để trống thì dùng logo mặc định trong public/images/platforms (nếu có).')->image()->disk('public')->directory('platforms'),
+                FileUpload::make('logo')->label('Logo')->helperText('Để trống thì dùng logo mặc định trong public/images/platforms (nếu có).')->image()->disk('uploads')->visibility('public')->directory('platforms'),
                 KeyValue::make('api_config')
                     ->label('Cấu hình API (được mã hoá)')
                     ->keyLabel('Khoá')

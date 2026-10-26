@@ -72,7 +72,7 @@ class SupportTicketResource extends Resource
                             TextEntry::make('user.name')->label('Người gửi')->weight('bold')
                                 ->helperText(fn ($record) => $record->created_at?->format('d/m/Y H:i')),
                             TextEntry::make('message')->hiddenLabel()->prose(),
-                            ImageEntry::make('attachments')->hiddenLabel()->disk('public')->visible(fn ($record) => ! empty($record->attachments)),
+                            ImageEntry::make('attachments')->hiddenLabel()->disk('uploads')->visibility('public')->visible(fn ($record) => ! empty($record->attachments)),
                         ]),
                 ]),
         ]);

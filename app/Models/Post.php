@@ -65,7 +65,7 @@ class Post extends Model
             return $this->thumbnail;
         }
 
-        return Storage::disk('public')->url($this->thumbnail);
+        return Storage::disk('uploads')->url($this->thumbnail);
     }
 
     /**

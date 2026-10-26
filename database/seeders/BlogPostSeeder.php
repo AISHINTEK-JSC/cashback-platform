@@ -8,10 +8,11 @@ use App\Models\Post;
 use App\Models\PostCategory;
 use App\Models\User;
 use Illuminate\Database\Seeder;
+use Illuminate\Support\Facades\Storage;
 
 /**
  * Bộ bài viết SEO ban đầu, nội dung nằm ở database/seeders/posts/{slug}.html,
- * ảnh bìa ở public/images/posts/{slug}.jpg (đi kèm code vì ổ đĩa trên host không lưu lâu dài).
+ * ảnh bìa ở posts/{slug}.jpg trên disk "uploads" (Cloudflare R2 ở production).
  *
  * Khoá theo slug và chỉ tạo bài chưa có, nên chạy lại an toàn trên production
  * và không ghi đè bài admin đã chỉnh sửa; bài đã có mà chưa có ảnh bìa thì được gắn ảnh.
@@ -187,7 +188,7 @@ class BlogPostSeeder extends Seeder
         );
 
         foreach (self::POSTS as $index => $post) {
-            $thumbnail = file_exists(public_path("images/posts/{$post['slug']}.jpg")) ? "/images/posts/{$post['slug']}.jpg" : null;
+            $thumbnail = Storage::disk('uploads')->exists("posts/{$post['slug']}.jpg") ? "posts/{$post['slug']}.jpg" : null;
 
             $model = Post::query()->firstOrCreate(['slug' => $post['slug']], [
                 'thumbnail' => $thumbnail,

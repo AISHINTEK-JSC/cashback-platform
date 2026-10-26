@@ -6,6 +6,7 @@ use App\Http\Controllers\Controller;
 use App\Services\ActivityLogger;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Storage;
 use Illuminate\Validation\Rule;
 use Illuminate\Validation\Rules\Password;
 use Illuminate\View\View;
@@ -33,7 +34,7 @@ class ProfileController extends Controller
         ]);
 
         if ($request->hasFile('avatar')) {
-            $data['avatar'] = '/storage/'.$request->file('avatar')->store('avatars', 'public');
+            $data['avatar'] = Storage::disk('uploads')->url($request->file('avatar')->store('avatars', 'uploads'));
         } else {
             unset($data['avatar']);
         }

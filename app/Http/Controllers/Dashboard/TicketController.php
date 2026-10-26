@@ -100,7 +100,7 @@ class TicketController extends Controller
     private function storeAttachments(Request $request): ?array
     {
         $paths = collect($request->file('attachments', []))
-            ->map(fn ($file) => $file->store('tickets/'.now()->format('Y/m'), 'public'))
+            ->map(fn ($file) => $file->store('tickets/'.now()->format('Y/m'), 'uploads'))
             ->values()
             ->all();
 

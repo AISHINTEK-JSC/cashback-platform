@@ -37,6 +37,13 @@ x-app-environment: &app-environment
   GOOGLE_CLIENT_SECRET: ${GOOGLE_CLIENT_SECRET:-}
   FACEBOOK_CLIENT_ID: ${FACEBOOK_CLIENT_ID:-}
   FACEBOOK_CLIENT_SECRET: ${FACEBOOK_CLIENT_SECRET:-}
+  # File tải lên lưu R2 (DB dùng chung với production nên local cũng phải lưu cùng chỗ)
+  UPLOADS_DRIVER: ${UPLOADS_DRIVER:-local}
+  R2_ACCESS_KEY_ID: ${R2_ACCESS_KEY_ID:-}
+  R2_SECRET_ACCESS_KEY: ${R2_SECRET_ACCESS_KEY:-}
+  R2_BUCKET: ${R2_BUCKET:-}
+  R2_ENDPOINT: ${R2_ENDPOINT:-}
+  R2_PUBLIC_URL: ${R2_PUBLIC_URL:-}
 
 services:
   app:
