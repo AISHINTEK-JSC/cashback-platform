@@ -12,6 +12,7 @@ RUN setcap -r /usr/local/bin/frankenphp
 
 COPY --from=composer:2 /usr/bin/composer /usr/bin/composer
 COPY docker/php.ini $PHP_INI_DIR/conf.d/zz-app.ini
+COPY docker/Caddyfile /etc/frankenphp/Caddyfile
 
 ENV SERVER_NAME=:80 \
     COMPOSER_ALLOW_SUPERUSER=1

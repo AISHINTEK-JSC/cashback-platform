@@ -21,7 +21,8 @@ class SeoController extends Controller
             $urls = collect([
                 ['loc' => route('home'), 'priority' => '1.0', 'changefreq' => 'daily'],
                 ['loc' => route('vouchers.index'), 'priority' => '0.9', 'changefreq' => 'daily'],
-                ...Platform::query()->active()->orderBy('id')->get()->map(fn (Platform $platform) => [
+                // Chỉ đưa trang voucher của sàn đang có mã, trang trống bị noindex
+                ...Platform::query()->active()->whereHas('vouchers', fn ($query) => $query->available())->orderBy('id')->get()->map(fn (Platform $platform) => [
                     'loc' => route('vouchers.platform', $platform),
                     'priority' => '0.9',
                     'changefreq' => 'daily',
@@ -54,6 +55,12 @@ class SeoController extends Controller
     public function robots(): Response
     {
         $lines = [
+            // Bot tạo bản xem trước link khi chia sẻ (Facebook, Messenger, X): cho đọc mọi trang
+            'User-agent: facebookexternalhit',
+            'User-agent: Facebot',
+            'User-agent: Twitterbot',
+            'Allow: /',
+            '',
             'User-agent: *',
             'Disallow: /tai-khoan',
             'Disallow: /admin',
@@ -64,6 +71,9 @@ class SeoController extends Controller
             'Sitemap: '.route('sitemap'),
         ];
 
-        return response(implode("\n", $lines)."\n", 200, ['Content-Type' => 'text/plain; charset=UTF-8']);
+        return response(implode("\n", $lines)."\n", 200, [
+            'Content-Type' => 'text/plain; charset=UTF-8',
+            'Cache-Control' => 'public, max-age=3600',
+        ]);
     }
 }

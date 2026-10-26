@@ -7,7 +7,7 @@
         : "Tổng hợp mã giảm giá, freeship ".$platforms->pluck('name')->join(', ')." mới nhất {$period}, cập nhật hằng ngày.";
 @endphp
 
-<x-layouts.app :title="$heading" :description="$description">
+<x-layouts.app :title="$heading" :description="$description" :noindex="$current && $vouchers->isEmpty()">
     <x-slot:head>
         <x-json-ld :data="[
             '@type' => 'BreadcrumbList',

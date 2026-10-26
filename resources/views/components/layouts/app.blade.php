@@ -3,7 +3,10 @@
 @php
     $siteName = setting('site_name');
     $pageTitle = $title ? $title.' - '.$siteName : $siteName.' - Hoàn tiền khi mua Shopee, TikTok Shop, Lazada';
-    $pageDescription = $description ?: $siteName.': dán link sản phẩm Shopee, TikTok Shop, Lazada, mua như bình thường và nhận lại tiền hoàn cho mỗi đơn hàng. Đăng ký miễn phí, rút tiền về ngân hàng.';
+    if (request()->integer('page') > 1) {
+        $pageTitle = ($title ?: $siteName).' - Trang '.request()->integer('page').' - '.$siteName;
+    }
+    $pageDescription = $description ?: $siteName.': dán link sản phẩm Shopee, TikTok Shop, Lazada, mua như bình thường và nhận lại tiền hoàn cho mỗi đơn hàng, rút tiền về ngân hàng.';
     $shareImage = $image ? url($image) : asset('images/og-default.png');
     $canonical = request()->integer('page') > 1 ? url()->current().'?page='.request()->integer('page') : url()->current();
     $user = auth()->user();
@@ -31,9 +34,7 @@
     <meta name="apple-mobile-web-app-title" content="{{ $siteName }}">
     <meta name="theme-color" content="#e04412" media="(prefers-color-scheme: light)">
     <meta name="theme-color" content="#17120f" media="(prefers-color-scheme: dark)">
-    <link rel="icon" href="/favicon.ico" sizes="48x48">
-    <link rel="icon" href="/favicon.svg" type="image/svg+xml">
-    <link rel="apple-touch-icon" href="/apple-touch-icon.png">
+    @include('partials.favicons')
     <link rel="manifest" href="/site.webmanifest">
 
     {{-- Thẻ chia sẻ cho Facebook, Zalo, Messenger, X --}}

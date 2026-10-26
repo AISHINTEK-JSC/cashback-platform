@@ -10,10 +10,12 @@ use App\Models\User;
 use Illuminate\Database\Seeder;
 
 /**
- * Bộ bài viết SEO ban đầu, nội dung nằm ở database/seeders/posts/{slug}.html.
+ * Bộ bài viết SEO ban đầu, nội dung nằm ở database/seeders/posts/{slug}.html,
+ * ảnh bìa ở public/images/posts/{slug}.jpg (đi kèm code vì ổ đĩa trên host không lưu lâu dài).
  *
  * Khoá theo slug và chỉ tạo bài chưa có, nên chạy lại an toàn trên production
- * và không ghi đè bài admin đã chỉnh sửa: php artisan db:seed --class=BlogPostSeeder
+ * và không ghi đè bài admin đã chỉnh sửa; bài đã có mà chưa có ảnh bìa thì được gắn ảnh.
+ * php artisan db:seed --class=BlogPostSeeder
  */
 class BlogPostSeeder extends Seeder
 {
@@ -185,7 +187,10 @@ class BlogPostSeeder extends Seeder
         );
 
         foreach (self::POSTS as $index => $post) {
-            Post::query()->firstOrCreate(['slug' => $post['slug']], [
+            $thumbnail = file_exists(public_path("images/posts/{$post['slug']}.jpg")) ? "/images/posts/{$post['slug']}.jpg" : null;
+
+            $model = Post::query()->firstOrCreate(['slug' => $post['slug']], [
+                'thumbnail' => $thumbnail,
                 'category_id' => $categories[$post['category']]->id,
                 'author_id' => $author->id,
                 'title' => $post['title'],
@@ -196,6 +201,10 @@ class BlogPostSeeder extends Seeder
                 'status' => PostStatus::Published,
                 'published_at' => now()->subDays((count(self::POSTS) - $index) * 2),
             ]);
+
+            if (! $model->thumbnail && $thumbnail) {
+                $model->update(['thumbnail' => $thumbnail]);
+            }
         }
     }
 }

@@ -46,7 +46,7 @@
         <p class="mt-3 text-sm text-stone-500">{{ $post->published_at?->format('d/m/Y') }} · {{ $post->author->name }} · {{ number_format($post->view_count, 0, ',', '.') }} lượt xem</p>
 
         @if ($post->thumbnail)
-            <img src="{{ $post->thumbnailUrl() }}" alt="" class="mt-6 w-full rounded-2xl">
+            <img src="{{ $post->thumbnailUrl() }}" alt="{{ $post->title }}" class="mt-6 w-full rounded-2xl">
         @endif
 
         {{-- Nội dung do admin soạn trong trình soạn thảo của trang quản trị --}}

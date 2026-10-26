@@ -1,0 +1,31 @@
+# Caddyfile mặc định của FrankenPHP, thêm header cache cho file tĩnh.
+# https://frankenphp.dev/docs/config
+
+{
+	skip_install_trust
+
+	{$CADDY_GLOBAL_OPTIONS}
+
+	frankenphp {
+		{$FRANKENPHP_CONFIG}
+	}
+}
+
+{$CADDY_EXTRA_CONFIG}
+
+{$SERVER_NAME:localhost} {
+	root {$SERVER_ROOT:public/}
+	encode zstd br gzip
+
+	# File Vite build có mã hash trong tên, đổi nội dung là đổi tên nên cache vĩnh viễn
+	@hashed path /build/assets/*
+	header @hashed Cache-Control "public, max-age=31536000, immutable"
+
+	# Ảnh, icon, ảnh tải lên: cache 7 ngày
+	@static path /images/* /storage/* /favicon.ico /favicon.svg /apple-touch-icon.png /icon-*.png /site.webmanifest
+	header @static Cache-Control "public, max-age=604800"
+
+	{$CADDY_SERVER_EXTRA_DIRECTIVES}
+
+	php_server
+}

@@ -32,8 +32,9 @@ Route::view('/cau-hoi-thuong-gap', 'pages.faq')->name('pages.faq');
 Route::view('/dieu-khoan', 'pages.terms')->name('pages.terms');
 Route::view('/chinh-sach-bao-mat', 'pages.privacy')->name('pages.privacy');
 
-Route::get('/sitemap.xml', [SeoController::class, 'sitemap'])->name('sitemap');
-Route::get('/robots.txt', [SeoController::class, 'robots'])->name('robots');
+// Không cần session/cookie: bot đọc nhanh, không tạo session rác, lỗi DB session không làm hỏng robots.txt
+Route::get('/sitemap.xml', [SeoController::class, 'sitemap'])->withoutMiddleware('web')->name('sitemap');
+Route::get('/robots.txt', [SeoController::class, 'robots'])->withoutMiddleware('web')->name('robots');
 
 Route::get('/r/{code}', ReferralLandingController::class)->name('referral.landing');
 Route::get('/go/{subId}', TrackingRedirectController::class)->name('links.redirect');

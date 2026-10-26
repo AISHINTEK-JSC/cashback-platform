@@ -13,6 +13,7 @@ use Filament\Pages\Dashboard;
 use Filament\Panel;
 use Filament\PanelProvider;
 use Filament\Support\Colors\Color;
+use Filament\View\PanelsRenderHook;
 use Illuminate\Cookie\Middleware\AddQueuedCookiesToResponse;
 use Illuminate\Cookie\Middleware\EncryptCookies;
 use Illuminate\Foundation\Http\Middleware\PreventRequestForgery;
@@ -31,7 +32,7 @@ class AdminPanelProvider extends PanelProvider
             ->login()
             ->brandName(fn () => setting('site_name').' - Quản trị')
             ->brandLogo(fn () => view('filament.brand'))
-            ->favicon(asset('favicon.svg'))
+            ->renderHook(PanelsRenderHook::HEAD_END, fn () => view('partials.favicons'))
             ->colors([
                 'primary' => Color::Orange,
             ])

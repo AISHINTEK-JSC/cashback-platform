@@ -232,3 +232,13 @@ it('keeps the command page away from staff', function () {
 
     $this->get('/admin/run-commands')->assertForbidden();
 });
+
+it('shows the site favicons in the admin panel', function () {
+    auth()->logout();
+
+    $this->get('/admin/login')
+        ->assertSuccessful()
+        ->assertSee('<link rel="icon" href="/favicon.ico" sizes="48x48">', false)
+        ->assertSee('<link rel="icon" href="/favicon.svg" type="image/svg+xml">', false)
+        ->assertSee('<link rel="apple-touch-icon" href="/apple-touch-icon.png">', false);
+});

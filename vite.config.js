@@ -12,6 +12,8 @@ export default defineConfig({
                 fontsource('Be Vietnam Pro', {
                     weights: [400, 500, 600, 700],
                     subsets: ['latin', 'latin-ext', 'vietnamese'],
+                    // Chỉ preload chữ thường và đậm (nội dung, tiêu đề); 500/600 tải khi cần
+                    preload: [{ weight: 400 }, { weight: 700 }],
                 }),
             ],
         }),

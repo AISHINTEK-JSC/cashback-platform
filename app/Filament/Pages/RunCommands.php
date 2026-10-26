@@ -31,7 +31,7 @@ class RunCommands extends Page
     public const COMMANDS = [
         'blog-posts' => [
             'label' => 'Đăng bộ bài viết có sẵn',
-            'description' => 'Tạo các bài blog SEO soạn sẵn còn thiếu. Bài đã có (theo đường dẫn) được giữ nguyên, không ghi đè bài đã sửa.',
+            'description' => 'Tạo các bài blog SEO soạn sẵn còn thiếu và gắn ảnh bìa cho bài chưa có ảnh. Bài đã có (theo đường dẫn) được giữ nguyên nội dung, không ghi đè bài đã sửa.',
             'command' => 'db:seed',
             'parameters' => ['--class' => BlogPostSeeder::class, '--force' => true],
         ],

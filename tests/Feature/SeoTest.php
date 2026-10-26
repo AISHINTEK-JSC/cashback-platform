@@ -17,17 +17,21 @@ it('lists public pages, platform voucher pages and published posts in the sitema
     $category = PostCategory::query()->create(['name' => 'Mẹo săn sale', 'slug' => 'meo-san-sale']);
     $post = Post::factory()->for($category, 'category')->create();
     $draft = Post::factory()->create(['status' => 'draft']);
+    Voucher::factory()->for($this->platform)->create();
     Platform::factory()->code('lazada', 'Lazada')->create(['is_active' => false]);
+    Platform::factory()->code('tiktok', 'TikTok Shop')->create();
 
     $response = $this->get(route('sitemap'))
         ->assertSuccessful()
         ->assertHeader('Content-Type', 'application/xml; charset=UTF-8')
+        ->assertHeaderMissing('Set-Cookie')
         ->assertSee('<loc>'.route('vouchers.platform', $this->platform).'</loc>', false)
         ->assertSee('<loc>'.route('posts.show', $post).'</loc>', false)
         ->assertSee('<loc>'.route('posts.category', $category).'</loc>', false)
         ->assertSee('<loc>'.route('pages.guide').'</loc>', false)
         ->assertDontSee(route('posts.show', $draft))
-        ->assertDontSee('/ma-giam-gia/lazada');
+        ->assertDontSee('/ma-giam-gia/lazada')
+        ->assertDontSee('/ma-giam-gia/tiktok');
 
     expect($response->getContent())->toStartWith('<?xml version="1.0" encoding="UTF-8"?>'."\n<urlset")
         ->and(simplexml_load_string($response->getContent()))->not->toBeFalse();
@@ -36,6 +40,8 @@ it('lists public pages, platform voucher pages and published posts in the sitema
 it('points crawlers to the sitemap and keeps them out of private pages', function () {
     $this->get('/robots.txt')
         ->assertSuccessful()
+        ->assertHeaderMissing('Set-Cookie')
+        ->assertSee("User-agent: facebookexternalhit\nUser-agent: Facebot\nUser-agent: Twitterbot\nAllow: /\n", false)
         ->assertSee('Disallow: /tai-khoan')
         ->assertSee('Disallow: /go/')
         ->assertSee('Sitemap: '.route('sitemap'));
@@ -57,6 +63,17 @@ it('renders a voucher page per platform', function () {
         ->assertSee('Đơn Shopee được hoàn đến', false)
         ->assertSee($post->title)
         ->assertSee('"@type":"BreadcrumbList"', false);
+});
+
+it('keeps empty platform voucher pages out of the index', function () {
+    $this->get(route('vouchers.platform', $this->platform))
+        ->assertSuccessful()
+        ->assertSee('<meta name="robots" content="noindex, follow">', false);
+});
+
+it('gives paginated blog pages their own title', function () {
+    $this->get(route('posts.index', ['page' => 2]))
+        ->assertSee('<title>Blog mẹo săn sale, hoàn tiền và kiếm tiền affiliate - Trang 2 - Ví Hoàn Tiền</title>', false);
 });
 
 it('hides the voucher page of an inactive platform', function () {
@@ -114,12 +131,21 @@ it('seeds the starter blog posts once without overwriting edits', function () {
     $this->seed(BlogPostSeeder::class);
 
     $post = Post::query()->where('slug', 'hoan-tien-la-gi')->sole();
-    $post->update(['title' => 'Đã sửa']);
+    expect($post->thumbnail)->toBe('/images/posts/hoan-tien-la-gi.jpg');
+    $post->update(['title' => 'Đã sửa', 'thumbnail' => null]);
+    $edited = Post::query()->where('slug', 'shopee-xu-la-gi')->sole();
+    $edited->update(['thumbnail' => 'posts/anh-tu-chon.jpg']);
 
     $this->seed(BlogPostSeeder::class);
 
     expect(Post::query()->published()->count())->toBe(17)
-        ->and($post->fresh()->title)->toBe('Đã sửa');
+        ->and($post->fresh()->title)->toBe('Đã sửa')
+        ->and($post->fresh()->thumbnail)->toBe('/images/posts/hoan-tien-la-gi.jpg')
+        ->and($edited->fresh()->thumbnail)->toBe('posts/anh-tu-chon.jpg');
+
+    foreach (Post::query()->where('thumbnail', 'like', '/images/posts/%')->pluck('thumbnail') as $thumbnail) {
+        expect(public_path(ltrim($thumbnail, '/')))->toBeFile();
+    }
 
     $this->get(route('posts.show', 'cach-san-ma-giam-gia-shopee'))
         ->assertSuccessful()

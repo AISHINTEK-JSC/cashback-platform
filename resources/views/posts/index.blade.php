@@ -1,4 +1,9 @@
-<x-layouts.app :title="$currentCategory?->name ?? 'Blog'" description="Mẹo săn sale, hướng dẫn nhận hoàn tiền Shopee, TikTok Shop, Lazada.">
+<x-layouts.app
+    :title="$currentCategory ? $currentCategory->name.' - Blog' : 'Blog mẹo săn sale, hoàn tiền và kiếm tiền affiliate'"
+    :description="$currentCategory
+        ? 'Tổng hợp bài viết '.mb_strtolower($currentCategory->name).': kinh nghiệm thực tế, hướng dẫn từng bước, cập nhật thường xuyên.'
+        : 'Mẹo săn sale, săn mã giảm giá, hướng dẫn nhận hoàn tiền khi mua sắm online và kinh nghiệm kiếm tiền affiliate cho người mới.'"
+>
     <div class="container-page py-10">
         <h1 class="text-3xl font-bold text-stone-900">{{ $currentCategory?->name ?? 'Blog mẹo săn sale' }}</h1>
 
