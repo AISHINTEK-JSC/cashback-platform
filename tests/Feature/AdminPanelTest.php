@@ -7,6 +7,7 @@ use App\Enums\WalletBucket;
 use App\Enums\WalletTransactionType;
 use App\Enums\WithdrawalStatus;
 use App\Filament\Pages\ManageSettings;
+use App\Filament\Pages\RunCommands;
 use App\Filament\Resources\FraudFlags\Pages\ListFraudFlags;
 use App\Filament\Resources\Orders\Pages\ViewOrder;
 use App\Filament\Resources\Platforms\Pages\ManagePlatforms;
@@ -14,6 +15,7 @@ use App\Filament\Resources\Posts\Pages\CreatePost;
 use App\Filament\Resources\Posts\Pages\EditPost;
 use App\Filament\Resources\Users\Pages\ViewUser;
 use App\Filament\Resources\Withdrawals\Pages\ListWithdrawals;
+use App\Models\ActivityLog;
 use App\Models\FraudFlag;
 use App\Models\Order;
 use App\Models\Post;
@@ -203,4 +205,30 @@ it('shows seo length hints and a preview link when editing a post', function () 
         ->assertSee('Mô tả trên Google: 170/160 ký tự, dài quá')
         ->assertActionExists('open')
         ->assertActionHasLabel('open', 'Xem trước');
+});
+
+it('runs a whitelisted artisan command from the admin panel', function () {
+    $this->get('/admin/run-commands')->assertSuccessful()->assertSee('php artisan db:seed --class=BlogPostSeeder --force');
+
+    Livewire::test(RunCommands::class)
+        ->callAction('run', arguments: ['command' => 'blog-posts'])
+        ->assertNotified('Đã chạy xong: Đăng bộ bài viết có sẵn')
+        ->assertSet('lastRun.exit_code', 0);
+
+    expect(Post::query()->published()->count())->toBe(17)
+        ->and(ActivityLog::query()->where('action', 'admin.command')->sole()->meta)->toBe(['command' => 'blog-posts', 'exit_code' => 0]);
+});
+
+it('refuses commands outside the whitelist', function () {
+    Livewire::test(RunCommands::class)
+        ->mountAction('run', ['command' => 'db-wipe'])
+        ->assertStatus(404);
+
+    expect(ActivityLog::query()->where('action', 'admin.command')->exists())->toBeFalse();
+});
+
+it('keeps the command page away from staff', function () {
+    $this->actingAs(User::factory()->create(['role' => 'staff']));
+
+    $this->get('/admin/run-commands')->assertForbidden();
 });
