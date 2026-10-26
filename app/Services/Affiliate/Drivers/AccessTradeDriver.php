@@ -9,6 +9,7 @@ use App\Services\Affiliate\AffiliateException;
 use App\Services\Affiliate\Data\GeneratedLink;
 use App\Services\Affiliate\Data\PlatformOrderData;
 use App\Services\Affiliate\Data\PlatformOrderItemData;
+use App\Support\Settings;
 use Carbon\CarbonInterface;
 use Illuminate\Http\Client\PendingRequest;
 use Illuminate\Http\Client\Response;
@@ -173,7 +174,7 @@ class AccessTradeDriver implements AffiliateDriver
 
     private function request(): PendingRequest
     {
-        $key = config('services.accesstrade.key');
+        $key = app(Settings::class)->secret('accesstrade_api_key');
 
         if (! $key) {
             throw new AffiliateException('Chưa cấu hình ACCESSTRADE_API_KEY.');

@@ -22,13 +22,17 @@ class TrackingLinkService
         $url = trim($url);
 
         if (! filter_var($url, FILTER_VALIDATE_URL) || ! in_array(parse_url($url, PHP_URL_SCHEME), ['http', 'https'], true)) {
-            throw new BusinessRuleException('Link không hợp lệ. Hãy dán link sản phẩm từ Shopee, TikTok Shop hoặc Lazada.');
+            throw new BusinessRuleException('Link không hợp lệ. Hãy dán đúng link sản phẩm cần hoàn tiền.');
         }
 
         $code = $this->affiliates->detectPlatformCode($url);
-        $platform = $code ? Platform::query()->active()->where('code', $code)->first() : null;
+        $platform = $code ? Platform::query()->where('code', $code)->first() : null;
 
-        if (! $platform) {
+        if ($platform?->isComingSoon()) {
+            throw new BusinessRuleException("Hoàn tiền {$platform->name} sắp ra mắt, hiện chưa tạo được link.");
+        }
+
+        if (! $platform?->is_active) {
             throw new BusinessRuleException('Sàn này hiện chưa được hỗ trợ hoàn tiền.');
         }
 

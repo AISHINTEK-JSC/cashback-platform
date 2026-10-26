@@ -1,4 +1,13 @@
 <x-layouts.app>
+    <x-slot:head>
+        <x-json-ld :data="[
+            '@graph' => [
+                ['@type' => 'WebSite', 'name' => setting('site_name'), 'url' => route('home'), 'inLanguage' => 'vi-VN'],
+                ['@type' => 'Organization', 'name' => setting('site_name'), 'url' => route('home'), 'logo' => asset('icon-512.png'), 'sameAs' => array_values(array_filter([setting('support_facebook')]))],
+            ],
+        ]" />
+    </x-slot:head>
+
     {{-- Hero: dán link lấy link hoàn tiền --}}
     <section class="relative overflow-hidden border-b border-stone-200 bg-gradient-to-b from-brand-50 to-stone-50">
         <div class="container-page py-14 text-center sm:py-20">
@@ -8,7 +17,7 @@
             <h1 class="mx-auto mt-5 max-w-3xl text-4xl font-bold tracking-tight text-balance text-stone-900 sm:text-5xl">
                 Mua sắm như bình thường, <span class="text-brand-600">nhận lại tiền</span> cho mỗi đơn hàng
             </h1>
-            <p class="mx-auto mt-4 max-w-2xl text-lg text-stone-600">Dán link sản phẩm Shopee, TikTok Shop, Lazada để lấy link hoàn tiền. Mua qua link đó, tiền hoàn tự động về ví của bạn.</p>
+            <p class="mx-auto mt-4 max-w-2xl text-lg text-stone-600">Dán link sản phẩm {{ $platforms->pluck('name')->join(', ') ?: 'cần mua' }} để lấy link hoàn tiền. Mua qua link đó, tiền hoàn tự động về ví của bạn.</p>
 
             <div class="mx-auto mt-8 max-w-2xl">
                 <livewire:link-generator />
@@ -29,6 +38,25 @@
         </div>
     </section>
 
+    {{-- Sàn và thương hiệu đang hoàn tiền --}}
+    @if ($platforms->isNotEmpty() || $comingSoonPlatforms->isNotEmpty())
+        <section class="container-page pt-10">
+            <div class="text-center">
+                <h2 class="text-2xl font-bold text-stone-900 sm:text-3xl">Nơi mua sắm có hoàn tiền</h2>
+                <p class="mt-2 text-stone-600">Mức hoàn tối đa tuỳ ngành hàng và sản phẩm, xem chính xác khi tạo link.</p>
+            </div>
+
+            <ul class="mt-8 grid grid-cols-2 gap-4 sm:grid-cols-3 lg:grid-cols-5">
+                @foreach ($platforms as $platform)
+                    @include('partials.platform-card', ['platform' => $platform, 'comingSoon' => false])
+                @endforeach
+                @foreach ($comingSoonPlatforms as $platform)
+                    @include('partials.platform-card', ['platform' => $platform, 'comingSoon' => true])
+                @endforeach
+            </ul>
+        </section>
+    @endif
+
     {{-- Thống kê hệ thống --}}
     <section class="container-page -mt-px py-10">
         <div class="grid gap-4 sm:grid-cols-3">
@@ -43,7 +71,7 @@
         <h2 class="text-center text-2xl font-bold text-stone-900 sm:text-3xl">Nhận hoàn tiền chỉ với 3 bước</h2>
         <div class="mt-8 grid gap-4 md:grid-cols-3">
             @foreach ([
-                ['icon' => 'link', 'title' => 'Dán link sản phẩm', 'body' => 'Sao chép link sản phẩm trên ứng dụng Shopee, TikTok Shop hoặc Lazada và dán vào ô phía trên.'],
+                ['icon' => 'link', 'title' => 'Dán link sản phẩm', 'body' => 'Sao chép link sản phẩm trên sàn hoặc website thương hiệu được hỗ trợ và dán vào ô phía trên.'],
                 ['icon' => 'shopping-bag', 'title' => 'Mua qua link hoàn tiền', 'body' => 'Mở link hoàn tiền, thêm sản phẩm vào giỏ và đặt hàng như bình thường, không cần làm gì thêm.'],
                 ['icon' => 'banknotes', 'title' => 'Nhận tiền về tài khoản', 'body' => 'Đơn tự động ghi nhận vào ví. Khi sàn chốt đơn, tiền chuyển sang số dư có thể rút về ngân hàng.'],
             ] as $i => $step)

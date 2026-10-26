@@ -5,6 +5,8 @@
         'shopee' => 'bg-[#ee4d2d] text-white',
         'tiktok' => 'bg-ink text-white',
         'lazada' => 'bg-[#0f136d] text-white',
+        'adidas' => 'bg-ink text-white',
+        'apple' => 'bg-stone-700 text-white',
         default => 'bg-stone-200 text-stone-800',
     };
 @endphp

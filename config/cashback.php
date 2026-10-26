@@ -14,10 +14,14 @@ return [
     */
 
     'settings' => [
-        'site_name' => env('APP_NAME', 'Sàn Hoàn Tiền'),
+        'site_name' => 'Ví Hoàn Tiền',
         'support_hotline' => '',
         'support_zalo' => '',
         'support_facebook' => '',
+
+        // SEO & thống kê: GA4 (G-XXXX) chỉ chạy ở production, mã xác minh là phần content của thẻ meta Search Console
+        'google_analytics_id' => env('GOOGLE_ANALYTICS_ID', ''),
+        'google_site_verification' => env('GOOGLE_SITE_VERIFICATION', ''),
 
         // Rút tiền (VND)
         'withdraw_min' => 50000,
@@ -48,6 +52,8 @@ return [
         'shopee' => env('AFFILIATE_SHOPEE_DRIVER', 'fake'),
         'tiktok' => env('AFFILIATE_TIKTOK_DRIVER', 'fake'),
         'lazada' => env('AFFILIATE_LAZADA_DRIVER', 'fake'),
+        'adidas' => env('AFFILIATE_ADIDAS_DRIVER', 'fake'),
+        'apple' => env('AFFILIATE_APPLE_DRIVER', 'fake'),
     ],
 
     /*

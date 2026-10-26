@@ -61,6 +61,7 @@ class LinkGenerator extends Component
 
         $activity->log($user, 'link.create', ['tracking_link_id' => $link->id]);
         $this->linkId = $link->id;
+        $this->dispatch('cashback-link-created', platform: $link->platform?->code);
     }
 
     public function resetForm(): void

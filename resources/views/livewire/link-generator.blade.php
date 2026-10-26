@@ -48,7 +48,7 @@
                 <input
                     type="url"
                     wire:model="url"
-                    placeholder="Dán link sản phẩm Shopee, TikTok Shop, Lazada..."
+                    placeholder="Dán link sản phẩm cần hoàn tiền..."
                     class="input !rounded-2xl !py-3.5 !pr-24 !pl-12 !text-base"
                     autocomplete="off"
                     inputmode="url"

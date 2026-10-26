@@ -33,6 +33,11 @@ class AppServiceProvider extends ServiceProvider
 
         if ($this->app->isProduction()) {
             URL::forceScheme('https');
+
+            // Canonical, sitemap, og:url luôn dùng domain chính thức kể cả khi truy cập qua www hay domain phụ của hosting
+            if (! str_contains((string) config('app.url'), 'localhost')) {
+                URL::forceRootUrl(config('app.url'));
+            }
         }
 
         Event::listen(DiagnosingHealth::class, fn () => DB::select('select 1'));

@@ -1,10 +1,11 @@
-@props(['title' => null, 'description' => null, 'image' => null, 'type' => 'website'])
+@props(['title' => null, 'description' => null, 'image' => null, 'type' => 'website', 'noindex' => false])
 
 @php
     $siteName = setting('site_name');
-    $pageTitle = $title ? $title.' - '.$siteName : $siteName.' - Hoàn tiền khi mua sắm Shopee, TikTok Shop, Lazada';
-    $pageDescription = $description ?: 'Dán link sản phẩm, mua như bình thường và nhận lại tiền hoàn cho mỗi đơn hàng Shopee, TikTok Shop, Lazada.';
+    $pageTitle = $title ? $title.' - '.$siteName : $siteName.' - Hoàn tiền khi mua Shopee, TikTok Shop, Lazada';
+    $pageDescription = $description ?: $siteName.': dán link sản phẩm Shopee, TikTok Shop, Lazada, mua như bình thường và nhận lại tiền hoàn cho mỗi đơn hàng. Đăng ký miễn phí, rút tiền về ngân hàng.';
     $shareImage = $image ? url($image) : asset('images/og-default.png');
+    $canonical = request()->integer('page') > 1 ? url()->current().'?page='.request()->integer('page') : url()->current();
     $user = auth()->user();
     $unread = $user?->unreadNotifications()->count() ?? 0;
     $nav = [
@@ -24,8 +25,12 @@
     <meta name="csrf-token" content="{{ csrf_token() }}">
     <title>{{ $pageTitle }}</title>
     <meta name="description" content="{{ $pageDescription }}">
-    <link rel="canonical" href="{{ url()->current() }}">
-    <meta name="theme-color" content="#e04412">
+    <link rel="canonical" href="{{ $canonical }}">
+    <meta name="robots" content="{{ $noindex ? 'noindex, follow' : 'index, follow, max-image-preview:large, max-snippet:-1' }}">
+    <meta name="application-name" content="{{ $siteName }}">
+    <meta name="apple-mobile-web-app-title" content="{{ $siteName }}">
+    <meta name="theme-color" content="#e04412" media="(prefers-color-scheme: light)">
+    <meta name="theme-color" content="#17120f" media="(prefers-color-scheme: dark)">
     <link rel="icon" href="/favicon.ico" sizes="48x48">
     <link rel="icon" href="/favicon.svg" type="image/svg+xml">
     <link rel="apple-touch-icon" href="/apple-touch-icon.png">
@@ -37,10 +42,11 @@
     <meta property="og:type" content="{{ $type }}">
     <meta property="og:title" content="{{ $title ?: $pageTitle }}">
     <meta property="og:description" content="{{ $pageDescription }}">
-    <meta property="og:url" content="{{ url()->current() }}">
+    <meta property="og:url" content="{{ $canonical }}">
     <meta property="og:image" content="{{ $shareImage }}">
     <meta property="og:image:alt" content="{{ $title ?: $siteName }}">
     @unless ($image)
+        <meta property="og:image:type" content="image/png">
         <meta property="og:image:width" content="1200">
         <meta property="og:image:height" content="630">
     @endunless
@@ -48,6 +54,21 @@
     <meta name="twitter:title" content="{{ $title ?: $pageTitle }}">
     <meta name="twitter:description" content="{{ $pageDescription }}">
     <meta name="twitter:image" content="{{ $shareImage }}">
+    <meta name="twitter:image:alt" content="{{ $title ?: $siteName }}">
+    @if ($siteVerification = setting('google_site_verification'))
+        <meta name="google-site-verification" content="{{ $siteVerification }}">
+    @endif
+    {{-- DB dùng chung với local nên chỉ đo ở production để số liệu GA không lẫn lượt xem khi dev --}}
+    @if (app()->isProduction() && ($analyticsId = setting('google_analytics_id')))
+        <script async src="https://www.googletagmanager.com/gtag/js?id={{ $analyticsId }}"></script>
+        <script>
+            window.dataLayer = window.dataLayer || [];
+            function gtag() { dataLayer.push(arguments); }
+            gtag('js', new Date());
+            gtag('config', @js($analyticsId));
+            window.addEventListener('cashback-link-created', (event) => gtag('event', 'generate_link', { platform: event.detail.platform }));
+        </script>
+    @endif
     {{-- Áp theme trước khi vẽ trang để không bị chớp sáng; dùng chung khoá "theme" với Filament --}}
     <script>
         (() => {
@@ -64,12 +85,9 @@
 </head>
 <body class="flex min-h-screen flex-col">
     <header x-data="{ open: false }" class="sticky top-0 z-40 border-b border-stone-200 bg-surface/90 backdrop-blur">
-        <div class="container-page flex h-16 items-center gap-6">
-            <a href="{{ route('home') }}" class="flex items-center gap-2 font-bold text-stone-900">
-                <span class="grid size-9 place-items-center rounded-xl bg-brand-600 text-white">
-                    <x-heroicon-s-banknotes class="size-5" />
-                </span>
-                <span class="text-lg">{{ $siteName }}</span>
+        <div class="container-page flex h-16 items-center gap-3 lg:gap-6">
+            <a href="{{ route('home') }}" aria-label="{{ $siteName }} - Trang chủ">
+                <x-logo :name="$siteName" />
             </a>
 
             <nav class="hidden flex-1 items-center gap-1 lg:flex">
@@ -82,7 +100,7 @@
                 @endforeach
             </nav>
 
-            <div class="ml-auto flex items-center gap-2">
+            <div class="ml-auto flex items-center gap-1 sm:gap-2">
                 <button type="button" x-data="themeToggle" @click="toggle()" class="btn btn-ghost !px-2.5" :aria-label="isDark ? 'Chuyển sang giao diện sáng' : 'Chuyển sang giao diện tối'" :title="isDark ? 'Giao diện sáng' : 'Giao diện tối'" aria-label="Đổi giao diện sáng/tối">
                     <x-heroicon-o-moon class="size-5" x-show="!isDark" />
                     <x-heroicon-o-sun class="size-5" x-show="isDark" x-cloak />
@@ -107,7 +125,7 @@
                     </a>
                 @else
                     <a href="{{ route('login') }}" class="btn btn-ghost hidden sm:inline-flex">Đăng nhập</a>
-                    <a href="{{ route('register') }}" class="btn btn-primary">Đăng ký</a>
+                    <a href="{{ route('register') }}" class="btn btn-primary whitespace-nowrap">Đăng ký</a>
                 @endauth
 
                 <button type="button" class="btn btn-ghost !px-2.5 lg:hidden" @click="open = !open" aria-label="Menu">
@@ -136,8 +154,8 @@
     <footer class="mt-16 border-t border-stone-200 bg-surface">
         <div class="container-page grid gap-8 py-10 sm:grid-cols-2 lg:grid-cols-4">
             <div class="sm:col-span-2">
-                <p class="font-bold text-stone-900">{{ $siteName }}</p>
-                <p class="mt-2 max-w-md text-sm text-stone-600">Nền tảng hoàn tiền khi mua sắm trên Shopee, TikTok Shop và Lazada. Chúng tôi nhận hoa hồng tiếp thị liên kết từ sàn và chia lại phần lớn cho bạn.</p>
+                <x-logo :name="$siteName" />
+                <p class="mt-2 max-w-md text-sm text-stone-600">Nền tảng hoàn tiền khi mua sắm trên sàn thương mại điện tử và website thương hiệu. Chúng tôi nhận hoa hồng tiếp thị liên kết từ sàn và chia lại phần lớn cho bạn.</p>
                 <div class="mt-4 flex flex-wrap gap-3 text-sm text-stone-600">
                     @if ($hotline = setting('support_hotline'))
                         <span>Hotline: <a href="tel:{{ $hotline }}" class="font-medium text-stone-900">{{ $hotline }}</a></span>
@@ -168,7 +186,7 @@
                 </ul>
             </div>
         </div>
-        <div class="border-t border-stone-100 py-4 text-center text-xs text-stone-500">© {{ now()->year }} {{ $siteName }}. Shopee, TikTok Shop, Lazada là thương hiệu của các chủ sở hữu tương ứng.</div>
+        <div class="border-t border-stone-100 py-4 text-center text-xs text-stone-500">© {{ now()->year }} {{ $siteName }}. Tên sàn và thương hiệu được nhắc đến thuộc về chủ sở hữu tương ứng.</div>
     </footer>
 
     @livewireScripts

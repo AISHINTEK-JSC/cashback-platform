@@ -58,6 +58,8 @@ return [
             'tiktok' => ['campaign_id' => '6648523843406889655', 'merchant' => 'tiktok_cps'],
             'shopee' => ['campaign_id' => '4751584435713464237', 'merchant' => 'shopee'],
             'lazada' => ['campaign_id' => '5249638763776692551', 'merchant' => 'lazada_cashback'],
+            'adidas' => ['campaign_id' => '5493145244551778830', 'merchant' => 'adidas_vietnam'],
+            'apple' => ['campaign_id' => '6420146511031719908', 'merchant' => 'apple'],
         ],
     ],
 

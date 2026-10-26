@@ -2,6 +2,7 @@
 
 use App\Enums\OrderStatus;
 use App\Models\Order;
+use App\Models\Platform;
 use App\Models\Post;
 use App\Models\SupportTicket;
 use App\Models\User;
@@ -18,6 +19,26 @@ it('renders the public pages', function (string $route) {
 
     $this->get(route($route))->assertSuccessful();
 })->with(['home', 'vouchers.index', 'rates', 'posts.index', 'pages.guide', 'pages.faq', 'pages.terms', 'pages.privacy', 'login', 'register', 'password.request']);
+
+it('lists coming soon platforms on the home page', function () {
+    Platform::factory()->code('apple', 'Apple')->create(['is_active' => false, 'is_coming_soon' => true]);
+    Platform::factory()->code('tiki', 'Tiki')->create(['is_active' => false]);
+
+    $this->get(route('home'))
+        ->assertSuccessful()
+        ->assertSeeInOrder(['Apple', 'Sắp ra mắt'])
+        ->assertDontSee('Tiki');
+});
+
+it('shows the max cashback rate of each active platform on the home page', function () {
+    $this->platform->update(['max_commission_rate' => 10]);
+
+    $this->get(route('home'))
+        ->assertSuccessful()
+        ->assertSee('Nơi mua sắm có hoàn tiền')
+        ->assertSee(asset('images/platforms/shopee.png'))
+        ->assertSeeInOrder(['Hoàn đến', '7%']);
+});
 
 it('renders a published post and hides drafts', function () {
     $post = Post::factory()->create();

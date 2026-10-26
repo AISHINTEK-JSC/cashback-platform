@@ -1,6 +1,6 @@
 @props(['title', 'subtitle' => null])
 
-<x-layouts.app :title="$title">
+<x-layouts.app :title="$title" noindex>
     <div class="container-page flex justify-center py-12">
         <div class="w-full max-w-md">
             <div class="card p-6 sm:p-8">

@@ -5,10 +5,12 @@ namespace App\Filament\Resources\Platforms;
 use App\Filament\Resources\Platforms\Pages\ManagePlatforms;
 use App\Filament\Support\NavigationGroup;
 use App\Models\Platform;
+use App\Services\Affiliate\AffiliateManager;
 use BackedEnum;
 use Filament\Actions\EditAction;
 use Filament\Forms\Components\FileUpload;
 use Filament\Forms\Components\KeyValue;
+use Filament\Forms\Components\Select;
 use Filament\Forms\Components\TextInput;
 use Filament\Forms\Components\Toggle;
 use Filament\Resources\Resource;
@@ -45,16 +47,29 @@ class PlatformResource extends Resource
         return $schema
             ->columns(2)
             ->components([
-                TextInput::make('code')->label('Mã')->helperText('shopee, tiktok, lazada - dùng để chọn driver API')->required()->alphaDash()->maxLength(20)->unique(ignoreRecord: true),
+                TextInput::make('code')->label('Mã')->helperText('shopee, tiktok, lazada, adidas, apple - dùng để chọn driver API')->required()->alphaDash()->maxLength(20)->unique(ignoreRecord: true),
                 TextInput::make('name')->label('Tên hiển thị')->required()->maxLength(50),
+                Select::make('driver')
+                    ->label('Driver API')
+                    ->options(AffiliateManager::DRIVER_LABELS)
+                    ->placeholder('Theo biến môi trường AFFILIATE_*_DRIVER')
+                    ->helperText('Chọn "Giả lập" khi chưa có campaign: link và đơn sinh ra là giả.'),
                 TextInput::make('lock_days')->label('Số ngày chờ sàn chốt đơn')->integer()->minValue(0)->required(),
+                TextInput::make('max_commission_rate')
+                    ->label('Hoa hồng tối đa sàn trả')
+                    ->numeric()
+                    ->minValue(0)
+                    ->maxValue(100)
+                    ->suffix('%')
+                    ->helperText('Trang chủ hiển thị "Hoàn đến" = mức này × % chia cho người mua. Để trống thì không hiện.'),
                 Toggle::make('is_active')->label('Đang bật')->inline(false),
-                FileUpload::make('logo')->label('Logo')->image()->disk('public')->directory('platforms'),
+                Toggle::make('is_coming_soon')->label('Hiển thị "Sắp ra mắt" khi chưa bật')->inline(false),
+                FileUpload::make('logo')->label('Logo')->helperText('Để trống thì dùng logo mặc định trong public/images/platforms (nếu có).')->image()->disk('public')->directory('platforms'),
                 KeyValue::make('api_config')
                     ->label('Cấu hình API (được mã hoá)')
                     ->keyLabel('Khoá')
                     ->valueLabel('Giá trị')
-                    ->helperText('Shopee: app_id, secret. AccessTrade (tuỳ chọn): campaign_id, merchant để ghi đè mặc định. Lưu ý chọn driver thật trong biến môi trường AFFILIATE_*_DRIVER.')
+                    ->helperText('Shopee: app_id, secret. AccessTrade (tuỳ chọn): campaign_id, merchant để ghi đè mặc định. API key AccessTrade nhập ở Cài đặt chung.')
                     ->columnSpanFull(),
             ]);
     }
@@ -65,9 +80,10 @@ class PlatformResource extends Resource
             ->columns([
                 TextColumn::make('name')->label('Sàn'),
                 TextColumn::make('code')->label('Mã')->fontFamily('mono'),
-                TextColumn::make('driver')->label('Driver')->state(fn (Platform $record) => config("cashback.drivers.{$record->code}", 'fake'))->badge()->color(fn (string $state) => $state === 'fake' ? 'warning' : 'success'),
+                TextColumn::make('driver')->label('Driver')->state(fn (Platform $record) => app(AffiliateManager::class)->driverName($record))->badge()->color(fn (string $state) => $state === 'fake' ? 'warning' : 'success'),
                 TextColumn::make('lock_days')->label('Ngày chờ chốt'),
                 IconColumn::make('is_active')->label('Bật')->boolean(),
+                IconColumn::make('is_coming_soon')->label('Sắp ra mắt')->boolean(),
                 TextColumn::make('orders_count')->label('Số đơn')->counts('orders'),
             ])
             ->recordActions([EditAction::make()]);

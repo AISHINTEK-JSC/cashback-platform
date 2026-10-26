@@ -1,11 +1,13 @@
 {
-    "name": "Sàn Hoàn Tiền",
-    "short_name": "Hoàn Tiền",
+    "name": "Ví Hoàn Tiền",
+    "short_name": "Ví Hoàn Tiền",
     "description": "Hoàn tiền khi mua sắm Shopee, TikTok Shop, Lazada.",
     "lang": "vi",
     "start_url": "/",
     "display": "standalone",
     "background_color": "#fafaf9",
+    "id": "/",
+    "scope": "/",
     "theme_color": "#e04412",
     "icons": [
         { "src": "/icon-192.png", "sizes": "192x192", "type": "image/png", "purpose": "any" },

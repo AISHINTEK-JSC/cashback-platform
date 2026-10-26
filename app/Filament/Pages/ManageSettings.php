@@ -11,6 +11,7 @@ use Filament\Pages\Page;
 use Filament\Schemas\Components\Section;
 use Filament\Schemas\Schema;
 use Filament\Support\Icons\Heroicon;
+use Illuminate\Support\Arr;
 use UnitEnum;
 
 /**
@@ -60,6 +61,21 @@ class ManageSettings extends Page
                         TextInput::make('support_zalo')->label('Link Zalo hỗ trợ')->url(),
                         TextInput::make('support_facebook')->label('Link Fanpage')->url(),
                     ]),
+                Section::make('SEO & thống kê')
+                    ->description('Gắn Google Analytics 4 và xác minh Google Search Console. GA chỉ chạy trên môi trường production.')
+                    ->columns(2)
+                    ->schema([
+                        TextInput::make('google_analytics_id')
+                            ->label('Mã đo lường GA4')
+                            ->placeholder('G-XXXXXXXXXX')
+                            ->regex('/^G-[A-Z0-9]+$/')
+                            ->maxLength(30),
+                        TextInput::make('google_site_verification')
+                            ->label('Mã xác minh Search Console')
+                            ->helperText('Chọn phương thức "Thẻ HTML", chỉ dán phần trong content="...".')
+                            ->regex('/^[A-Za-z0-9_-]+$/')
+                            ->maxLength(100),
+                    ]),
                 Section::make('Rút tiền')
                     ->columns(4)
                     ->schema([
@@ -76,6 +92,16 @@ class ManageSettings extends Page
                             ->regex('/^\d+(,\d+)*$/')
                             ->required(),
                     ]),
+                Section::make('Tích hợp API')
+                    ->description('Lưu mã hoá trong hệ thống, được ưu tiên hơn file .env. Để trống ô nào thì giữ nguyên giá trị cũ của ô đó.')
+                    ->columns(2)
+                    ->schema([
+                        $this->secretInput('accesstrade_api_key', 'API key AccessTrade')->columnSpanFull(),
+                        $this->secretInput('google_client_id', 'Google Client ID'),
+                        $this->secretInput('google_client_secret', 'Google Client Secret'),
+                        $this->secretInput('facebook_client_id', 'Facebook App ID'),
+                        $this->secretInput('facebook_client_secret', 'Facebook App Secret'),
+                    ]),
                 Section::make('Chống gian lận')
                     ->columns(2)
                     ->schema([
@@ -87,10 +113,36 @@ class ManageSettings extends Page
 
     public function save(Settings $settings): void
     {
-        foreach ($this->form->getState() as $key => $value) {
+        $state = $this->form->getState();
+
+        foreach (array_filter(Arr::pull($state, 'secrets', []), 'filled') as $key => $value) {
+            $settings->setSecret($key, trim($value));
+        }
+
+        foreach ($state as $key => $value) {
             $settings->set($key, $value);
         }
 
+        $this->form->fill([...$state, 'secrets' => []]);
+
         Notification::make()->title('Đã lưu cài đặt.')->success()->send();
+    }
+
+    /**
+     * Ô nhập khoá bí mật: không đổ giá trị cũ ra trình duyệt, chỉ báo đang dùng nguồn nào.
+     */
+    private function secretInput(string $key, string $label): TextInput
+    {
+        return TextInput::make("secrets.{$key}")
+            ->label($label)
+            ->password()
+            ->revealable()
+            ->autocomplete('new-password')
+            ->maxLength(500)
+            ->placeholder(fn (): string => match (true) {
+                app(Settings::class)->hasStoredSecret($key) => 'Đã lưu trong hệ thống',
+                filled(config(Settings::SECRETS[$key])) => 'Đang dùng giá trị trong .env',
+                default => 'Chưa cấu hình',
+            });
     }
 }

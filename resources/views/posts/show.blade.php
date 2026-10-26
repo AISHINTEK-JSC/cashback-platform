@@ -1,9 +1,32 @@
 <x-layouts.app :title="$post->meta_title ?: $post->title" :description="$post->meta_description ?: $post->excerpt" :image="$post->thumbnailUrl()" type="article">
-    @if ($post->published_at)
-        <x-slot:head>
+    <x-slot:head>
+        @if ($post->published_at)
             <meta property="article:published_time" content="{{ $post->published_at->toIso8601String() }}">
-        </x-slot:head>
-    @endif
+        @endif
+        <x-json-ld :data="[
+            '@graph' => [
+                [
+                    '@type' => 'BlogPosting',
+                    'headline' => $post->title,
+                    'description' => $post->meta_description ?: $post->excerpt,
+                    'image' => url($post->thumbnailUrl() ?: asset('images/og-default.png')),
+                    'datePublished' => $post->published_at?->toIso8601String(),
+                    'dateModified' => $post->updated_at?->toIso8601String(),
+                    'author' => ['@type' => 'Person', 'name' => $post->author->name],
+                    'publisher' => ['@type' => 'Organization', 'name' => setting('site_name'), 'logo' => ['@type' => 'ImageObject', 'url' => asset('icon-512.png')]],
+                    'mainEntityOfPage' => route('posts.show', $post),
+                ],
+                [
+                    '@type' => 'BreadcrumbList',
+                    'itemListElement' => array_values(array_filter([
+                        ['@type' => 'ListItem', 'position' => 1, 'name' => 'Blog', 'item' => route('posts.index')],
+                        $post->category ? ['@type' => 'ListItem', 'position' => 2, 'name' => $post->category->name, 'item' => route('posts.category', $post->category)] : null,
+                        ['@type' => 'ListItem', 'position' => $post->category ? 3 : 2, 'name' => $post->title],
+                    ])),
+                ],
+            ],
+        ]" />
+    </x-slot:head>
 
     <article class="container-page max-w-3xl py-10">
         <nav class="text-sm text-stone-500">

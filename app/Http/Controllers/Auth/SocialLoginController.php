@@ -8,6 +8,7 @@ use App\Models\User;
 use App\Services\Auth\LoginTracker;
 use App\Services\Auth\RegisterUser;
 use App\Services\ReferralService;
+use App\Support\Settings;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
@@ -20,13 +21,17 @@ class SocialLoginController extends Controller
 {
     public const PROVIDERS = ['google', 'facebook'];
 
-    public function redirect(string $provider): SymfonyRedirectResponse
+    public function redirect(string $provider, Settings $settings): SymfonyRedirectResponse
     {
+        $this->useStoredCredentials($provider, $settings);
+
         return Socialite::driver($provider)->redirect();
     }
 
-    public function callback(Request $request, string $provider, RegisterUser $register, LoginTracker $tracker): RedirectResponse
+    public function callback(Request $request, string $provider, RegisterUser $register, LoginTracker $tracker, Settings $settings): RedirectResponse
     {
+        $this->useStoredCredentials($provider, $settings);
+
         try {
             $socialUser = Socialite::driver($provider)->user();
         } catch (Throwable) {
@@ -68,5 +73,16 @@ class SocialLoginController extends Controller
         $tracker->record($user, $isNew ? 'register' : 'login');
 
         return redirect()->intended(route('dashboard.index'));
+    }
+
+    /**
+     * Client ID/secret nhập ở trang Cài đặt chung được ưu tiên hơn .env.
+     */
+    private function useStoredCredentials(string $provider, Settings $settings): void
+    {
+        config([
+            "services.{$provider}.client_id" => $settings->secret("{$provider}_client_id"),
+            "services.{$provider}.client_secret" => $settings->secret("{$provider}_client_secret"),
+        ]);
     }
 }

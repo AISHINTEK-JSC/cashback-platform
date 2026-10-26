@@ -35,6 +35,7 @@ class HomeController extends Controller
         return view('home', [
             'stats' => $stats,
             'platforms' => $platforms,
+            'comingSoonPlatforms' => Platform::query()->comingSoon()->orderBy('id')->get(),
             'vouchers' => Voucher::query()->available()->with('platform')->orderBy('sort_order')->latest()->limit(6)->get(),
             'posts' => Post::query()->published()->with('category')->latest('published_at')->limit(3)->get(),
         ]);

@@ -30,6 +30,8 @@ class AdminPanelProvider extends PanelProvider
             ->path('admin')
             ->login()
             ->brandName(fn () => setting('site_name').' - Quản trị')
+            ->brandLogo(fn () => view('filament.brand'))
+            ->favicon(asset('favicon.svg'))
             ->colors([
                 'primary' => Color::Orange,
             ])

@@ -27,6 +27,19 @@ class AffiliateManager
     ];
 
     /**
+     * Nhãn driver hiển thị ở trang quản trị Sàn liên kết.
+     *
+     * @var array<string, string>
+     */
+    public const DRIVER_LABELS = [
+        'fake' => 'Giả lập (dev/demo)',
+        'accesstrade' => 'AccessTrade',
+        'shopee' => 'Shopee Open API',
+        'tiktok' => 'TikTok Shop API',
+        'lazada' => 'Lazada API',
+    ];
+
+    /**
      * Tên miền (kể cả link rút gọn) của từng sàn.
      *
      * @var array<string, list<string>>
@@ -35,15 +48,23 @@ class AffiliateManager
         'shopee' => ['shopee.vn', 'shope.ee', 'shp.ee', 's.shopee.vn', 'vn.shp.ee'],
         'tiktok' => ['tiktok.com', 'vt.tiktok.com', 'vm.tiktok.com', 'shop.tiktok.com'],
         'lazada' => ['lazada.vn', 's.lazada.vn', 'c.lazada.vn'],
+        'adidas' => ['adidas.com.vn'],
+        'apple' => ['apple.com'],
     ];
 
     public function __construct(private readonly Container $container) {}
 
     public function driver(Platform $platform): AffiliateDriver
     {
-        $name = config("cashback.drivers.{$platform->code}", 'fake');
+        return $this->container->make(self::DRIVERS[$this->driverName($platform)] ?? FakeDriver::class);
+    }
 
-        return $this->container->make(self::DRIVERS[$name] ?? FakeDriver::class);
+    /**
+     * Driver chọn ở trang quản trị, chưa chọn thì theo biến AFFILIATE_*_DRIVER.
+     */
+    public function driverName(Platform $platform): string
+    {
+        return $platform->driver ?: config("cashback.drivers.{$platform->code}", 'fake');
     }
 
     public function detectPlatformCode(string $url): ?string

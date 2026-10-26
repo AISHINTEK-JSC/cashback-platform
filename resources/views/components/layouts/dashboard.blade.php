@@ -27,7 +27,7 @@
     ];
 @endphp
 
-<x-layouts.app :title="$title">
+<x-layouts.app :title="$title" noindex>
     <div class="container-page py-6 lg:py-10">
         <div class="lg:grid lg:grid-cols-[248px_1fr] lg:gap-8">
             <aside class="mb-6 lg:mb-0">

@@ -9,17 +9,22 @@ use App\Enums\WithdrawalStatus;
 use App\Filament\Pages\ManageSettings;
 use App\Filament\Resources\FraudFlags\Pages\ListFraudFlags;
 use App\Filament\Resources\Orders\Pages\ViewOrder;
+use App\Filament\Resources\Platforms\Pages\ManagePlatforms;
 use App\Filament\Resources\Users\Pages\ViewUser;
 use App\Filament\Resources\Withdrawals\Pages\ListWithdrawals;
 use App\Models\FraudFlag;
 use App\Models\Order;
+use App\Models\Setting;
 use App\Models\SupportTicket;
 use App\Models\User;
 use App\Models\UserBankAccount;
 use App\Models\Withdrawal;
+use App\Services\Affiliate\AffiliateManager;
+use App\Services\Affiliate\Drivers\AccessTradeDriver;
 use App\Services\Orders\OrderRewardService;
 use App\Services\WalletService;
 use App\Services\WithdrawalService;
+use App\Support\Settings;
 use Livewire\Livewire;
 
 beforeEach(function () {
@@ -122,6 +127,39 @@ it('saves settings', function () {
         ->assertHasNoErrors();
 
     expect(setting('withdraw_min'))->toBe(20000);
+});
+
+it('stores integration keys encrypted and keeps them when left blank', function () {
+    Livewire::test(ManageSettings::class)
+        ->set('data.secrets.accesstrade_api_key', ' at-key-123 ')
+        ->call('save')
+        ->assertHasNoErrors()
+        ->assertSet('data.secrets.accesstrade_api_key', null);
+
+    $stored = Setting::query()->find('accesstrade_api_key')->value;
+
+    expect($stored)->not->toContain('at-key-123')
+        ->and(app(Settings::class)->secret('accesstrade_api_key'))->toBe('at-key-123');
+
+    Livewire::test(ManageSettings::class)->call('save')->assertHasNoErrors();
+
+    expect(app(Settings::class)->secret('accesstrade_api_key'))->toBe('at-key-123');
+});
+
+it('falls back to the env value when no integration key is stored', function () {
+    config(['services.google.client_id' => 'env-google-id']);
+
+    expect(app(Settings::class)->secret('google_client_id'))->toBe('env-google-id');
+});
+
+it('lets admins pick the affiliate driver of a platform', function () {
+    config(['cashback.drivers.shopee' => 'fake']);
+
+    Livewire::test(ManagePlatforms::class)
+        ->callTableAction('edit', $this->platform, data: ['driver' => 'accesstrade'])
+        ->assertHasNoTableActionErrors();
+
+    expect(app(AffiliateManager::class)->driver($this->platform->fresh()))->toBeInstanceOf(AccessTradeDriver::class);
 });
 
 it('confirms a fraud flag and locks the member', function () {

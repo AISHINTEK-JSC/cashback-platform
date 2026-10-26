@@ -24,11 +24,13 @@ class ReferenceDataSeeder extends Seeder
         }
 
         foreach ([
-            ['code' => 'shopee', 'name' => 'Shopee', 'lock_days' => 35],
-            ['code' => 'tiktok', 'name' => 'TikTok Shop', 'lock_days' => 45],
-            ['code' => 'lazada', 'name' => 'Lazada', 'lock_days' => 45],
+            ['code' => 'shopee', 'name' => 'Shopee', 'lock_days' => 35, 'is_active' => true],
+            ['code' => 'tiktok', 'name' => 'TikTok Shop', 'lock_days' => 45, 'is_active' => true],
+            ['code' => 'lazada', 'name' => 'Lazada', 'lock_days' => 45, 'is_active' => true],
+            ['code' => 'adidas', 'name' => 'Adidas', 'lock_days' => 60, 'is_active' => true],
+            ['code' => 'apple', 'name' => 'Apple', 'lock_days' => 90, 'is_active' => false, 'is_coming_soon' => true],
         ] as $data) {
-            $platform = Platform::query()->firstOrCreate(['code' => $data['code']], [...$data, 'is_active' => true]);
+            $platform = Platform::query()->firstOrCreate(['code' => $data['code']], $data);
 
             CommissionRule::query()->firstOrCreate(
                 ['platform_id' => $platform->id, 'category_code' => null],

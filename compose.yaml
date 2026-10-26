@@ -2,7 +2,7 @@
 # Web: http://localhost:8001  |  Admin: http://localhost:8001/admin  |  Mailpit: http://localhost:8025
 
 x-app-environment: &app-environment
-  APP_NAME: "Sàn Hoàn Tiền"
+  APP_NAME: "Ví Hoàn Tiền"
   APP_ENV: ${APP_ENV:-local}
   APP_DEBUG: ${APP_DEBUG:-true}
   APP_KEY: ${APP_KEY:-} # phải trùng APP_KEY trên production vì dùng chung DB
@@ -19,15 +19,16 @@ x-app-environment: &app-environment
   DB_USERNAME: ${DB_USERNAME}
   DB_PASSWORD: ${DB_PASSWORD}
   DB_SSLMODE: require
-  SESSION_DRIVER: database
-  CACHE_STORE: database
+  # Session/cache để file (volume storage dùng chung giữa các container): DB ở xa, mỗi truy vấn mất ~150ms
+  SESSION_DRIVER: file
+  CACHE_STORE: file
   QUEUE_CONNECTION: database
   FILESYSTEM_DISK: local
   MAIL_MAILER: smtp
   MAIL_HOST: mailpit
   MAIL_PORT: 1025
-  MAIL_FROM_ADDRESS: no-reply@sanhoantien.local
-  MAIL_FROM_NAME: "Sàn Hoàn Tiền"
+  MAIL_FROM_ADDRESS: no-reply@vihoantien.id.vn
+  MAIL_FROM_NAME: "Ví Hoàn Tiền"
   AFFILIATE_SHOPEE_DRIVER: ${AFFILIATE_SHOPEE_DRIVER:-fake}
   AFFILIATE_TIKTOK_DRIVER: ${AFFILIATE_TIKTOK_DRIVER:-fake}
   AFFILIATE_LAZADA_DRIVER: ${AFFILIATE_LAZADA_DRIVER:-fake}

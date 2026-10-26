@@ -9,6 +9,7 @@ use App\Http\Controllers\HomeController;
 use App\Http\Controllers\PostController;
 use App\Http\Controllers\RateController;
 use App\Http\Controllers\ReferralLandingController;
+use App\Http\Controllers\SeoController;
 use App\Http\Controllers\TrackingRedirectController;
 use App\Http\Controllers\VoucherController;
 use Illuminate\Support\Facades\Route;
@@ -20,7 +21,8 @@ use Illuminate\Support\Facades\Route;
 */
 
 Route::get('/', HomeController::class)->name('home');
-Route::get('/ma-giam-gia', VoucherController::class)->name('vouchers.index');
+Route::get('/ma-giam-gia', [VoucherController::class, 'index'])->name('vouchers.index');
+Route::get('/ma-giam-gia/{platform:code}', [VoucherController::class, 'platform'])->name('vouchers.platform');
 Route::get('/ty-le-hoan-tien', RateController::class)->name('rates');
 Route::get('/blog', [PostController::class, 'index'])->name('posts.index');
 Route::get('/blog/danh-muc/{category:slug}', [PostController::class, 'category'])->name('posts.category');
@@ -29,6 +31,9 @@ Route::view('/huong-dan', 'pages.guide')->name('pages.guide');
 Route::view('/cau-hoi-thuong-gap', 'pages.faq')->name('pages.faq');
 Route::view('/dieu-khoan', 'pages.terms')->name('pages.terms');
 Route::view('/chinh-sach-bao-mat', 'pages.privacy')->name('pages.privacy');
+
+Route::get('/sitemap.xml', [SeoController::class, 'sitemap'])->name('sitemap');
+Route::get('/robots.txt', [SeoController::class, 'robots'])->name('robots');
 
 Route::get('/r/{code}', ReferralLandingController::class)->name('referral.landing');
 Route::get('/go/{subId}', TrackingRedirectController::class)->name('links.redirect');
