@@ -72,6 +72,7 @@ class TelegramUpdateHandler
                 'donhang' => $this->orders($chatId, $user),
                 'ruttien' => $this->withdraw($chatId, $user),
                 'gioithieu' => $this->referral($chatId, $user),
+                'thongbao' => $this->toggleNotifications($chatId, $user, $argument),
                 'huylienket' => $this->unlink($chatId, $user),
                 default => $this->help($chatId),
             };
@@ -118,7 +119,7 @@ class TelegramUpdateHandler
 
         // Một chat Telegram chỉ gắn với một tài khoản: gỡ khỏi tài khoản cũ nếu có, kể cả tài khoản đã xoá mềm (cột unique)
         User::withTrashed()->where('telegram_chat_id', $chatId)->whereKeyNot($user->id)->update(['telegram_chat_id' => null, 'telegram_username' => null, 'telegram_linked_at' => null]);
-        $user->update(['telegram_chat_id' => $chatId, 'telegram_username' => $username, 'telegram_linked_at' => now()]);
+        $user->update(['telegram_chat_id' => $chatId, 'telegram_username' => $username, 'telegram_linked_at' => now(), 'telegram_notifications' => true]);
         $this->activity->log($user, 'telegram.link', ['username' => $username]);
 
         $this->bot->sendMessage(
@@ -253,6 +254,28 @@ class TelegramUpdateHandler
         );
     }
 
+    /**
+     * /thongbao (đảo trạng thái), /thongbao tat, /thongbao bat: tắt thông báo vẫn giữ liên kết để dùng bot tạo link.
+     */
+    private function toggleNotifications(int $chatId, ?User $user, string $argument): void
+    {
+        if (! $this->ensureLinked($chatId, $user)) {
+            return;
+        }
+
+        $enabled = match (Str::lower(Str::ascii($argument))) {
+            'bat', 'on' => true,
+            'tat', 'off' => false,
+            default => ! ($user->telegram_notifications ?? true),
+        };
+
+        $user->update(['telegram_notifications' => $enabled]);
+
+        $this->bot->sendMessage($chatId, $enabled
+            ? '🔔 Đã <b>bật</b> thông báo qua Telegram. Bạn sẽ nhận tin khi có đơn mới, tiền về ví và rút tiền. Gõ /thongbao tat để tắt.'
+            : '🔕 Đã <b>tắt</b> thông báo qua Telegram. Bạn vẫn dùng bot để tạo link và tra cứu như bình thường. Gõ /thongbao bat để bật lại.');
+    }
+
     private function unlink(int $chatId, ?User $user): void
     {
         if (! $user) {
@@ -272,7 +295,7 @@ class TelegramUpdateHandler
         $this->bot->sendMessage(
             $chatId,
             "📖 <b>Hướng dẫn</b>\n1. Gửi link sản phẩm Shopee, TikTok Shop, Lazada vào đây.\n2. Bấm <b>Mua ngay</b> trong tin trả lời và đặt hàng như bình thường.\n3. Tiền hoàn về ví sau khi sàn duyệt đơn, rút về ngân hàng bất cứ lúc nào.\n\n"
-                ."/sodu Số dư ví\n/donhang Đơn hàng gần đây\n/ruttien Rút tiền\n/gioithieu Link giới thiệu bạn bè\n/huylienket Huỷ liên kết",
+                ."/sodu Số dư ví\n/donhang Đơn hàng gần đây\n/ruttien Rút tiền\n/gioithieu Link giới thiệu bạn bè\n/thongbao Bật/tắt thông báo\n/huylienket Huỷ liên kết",
             [['Câu hỏi thường gặp', route('pages.faq')], ['Gửi yêu cầu hỗ trợ', route('dashboard.tickets.create')]],
         );
     }

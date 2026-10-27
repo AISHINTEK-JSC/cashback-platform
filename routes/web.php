@@ -121,4 +121,5 @@ Route::middleware(['auth', 'active', 'verified'])->prefix('tai-khoan')->name('da
     Route::post('/ho-so/telegram', [Dashboard\TelegramLinkController::class, 'store'])->middleware('throttle:10,1')->name('telegram.link');
     Route::delete('/ho-so/telegram', [Dashboard\TelegramLinkController::class, 'destroy'])->name('telegram.unlink');
     Route::post('/ho-so/telegram/an-goi-y', [Dashboard\TelegramLinkController::class, 'dismissPrompt'])->name('telegram.dismiss-prompt');
+    Route::patch('/ho-so/telegram/thong-bao', [Dashboard\TelegramLinkController::class, 'updateNotifications'])->name('telegram.notifications');
 });

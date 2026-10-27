@@ -24,6 +24,19 @@ class TelegramLinkController extends Controller
     }
 
     /**
+     * Bật/tắt nhận thông báo qua Telegram, vẫn giữ liên kết để dùng bot tạo link và tra cứu.
+     */
+    public function updateNotifications(Request $request): RedirectResponse
+    {
+        $data = $request->validate(['enabled' => ['required', 'boolean']]);
+        $enabled = (bool) $data['enabled'];
+
+        $request->user()->update(['telegram_notifications' => $enabled]);
+
+        return back()->with('success', $enabled ? 'Đã bật thông báo qua Telegram.' : 'Đã tắt thông báo qua Telegram. Bạn vẫn dùng bot để tạo link như bình thường.');
+    }
+
+    /**
      * Ẩn gợi ý liên kết ở trang tổng quan; mục Telegram trong trang Hồ sơ vẫn còn.
      */
     public function dismissPrompt(Request $request): RedirectResponse

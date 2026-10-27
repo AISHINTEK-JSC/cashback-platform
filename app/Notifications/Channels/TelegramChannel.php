@@ -23,16 +23,17 @@ class TelegramChannel
      */
     public static function for(object $notifiable): array
     {
-        return filled($notifiable->telegram_chat_id ?? null) ? [self::class] : [];
+        return static::wantsNotifications($notifiable) ? [self::class] : [];
     }
 
     public function send(object $notifiable, Notification $notification): void
     {
-        $chatId = $notifiable->telegram_chat_id ?? null;
-
-        if (! $chatId || ! $this->bot->isConfigured() || ! method_exists($notification, 'toArray')) {
+        // Kiểm tra lại lúc gửi: thông báo đi qua hàng đợi, user có thể đã tắt hoặc huỷ liên kết trong lúc chờ
+        if (! static::wantsNotifications($notifiable) || ! $this->bot->isConfigured() || ! method_exists($notification, 'toArray')) {
             return;
         }
+
+        $chatId = $notifiable->telegram_chat_id;
 
         $data = $notification->toArray($notifiable);
 
@@ -53,5 +54,13 @@ class TelegramChannel
         } catch (Throwable $e) {
             report($e);
         }
+    }
+
+    /**
+     * Đã liên kết Telegram và không tắt "Nhận thông báo qua Telegram" ở trang Hồ sơ hoặc bằng /thongbao.
+     */
+    private static function wantsNotifications(object $notifiable): bool
+    {
+        return filled($notifiable->telegram_chat_id ?? null) && ($notifiable->telegram_notifications ?? true);
     }
 }

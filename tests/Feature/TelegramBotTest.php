@@ -20,7 +20,13 @@ use Illuminate\Testing\TestResponse;
 beforeEach(function () {
     $this->withoutVite();
     config(['services.telegram.bot_token' => 'test-token', 'services.telegram.bot_username' => 'vihoantien_bot']);
-    Http::fake(['api.telegram.org/*' => Http::response(['ok' => true, 'result' => true])]);
+    // Phản hồi riêng theo method Telegram (vd. 'getMyName'), còn lại trả ok
+    $this->telegramResponses = [];
+    Http::fake(function (Request $request) {
+        $method = str($request->url())->afterLast('/')->toString();
+
+        return $this->telegramResponses[$method] ?? Http::response(['ok' => true, 'result' => true]);
+    });
 
     $this->platform = shopeeWithDefaultRule();
     $this->user = User::factory()->create(['name' => 'Nguyễn Văn A']);
@@ -206,6 +212,80 @@ it('sets the bot display name, commands and webhook on setup', function () {
     Http::assertSent(fn (Request $request) => str_ends_with($request->url(), '/setWebhook') && $request['url'] === 'https://vihoantien.id.vn/telegram/webhook');
     Http::assertSent(fn (Request $request) => str_ends_with($request->url(), '/setMyName') && $request['name'] === 'Ví Hoàn Tiền');
     Http::assertSent(fn (Request $request) => str_ends_with($request->url(), '/setMyCommands') && count($request['commands']) === count(TelegramBot::COMMANDS));
+});
+
+it('only updates bot details that changed on setup', function () {
+    config(['app.url' => 'https://vihoantien.id.vn']);
+    URL::forceRootUrl('https://vihoantien.id.vn');
+    URL::forceScheme('https');
+    $this->telegramResponses = [
+        'getMyName' => Http::response(['ok' => true, 'result' => ['name' => 'Ví Hoàn Tiền']]),
+        'getMyCommands' => Http::response(['ok' => true, 'result' => collect(TelegramBot::COMMANDS)->map(fn ($description, $command) => compact('command', 'description'))->values()->all()]),
+    ];
+
+    $this->artisan('telegram:setup')->assertSuccessful();
+
+    Http::assertSent(fn (Request $request) => str_ends_with($request->url(), '/setWebhook'));
+    Http::assertNotSent(fn (Request $request) => str_ends_with($request->url(), '/setMyName'));
+    Http::assertNotSent(fn (Request $request) => str_ends_with($request->url(), '/setMyCommands'));
+    Http::assertSent(fn (Request $request) => str_ends_with($request->url(), '/setMyDescription'));
+});
+
+it('keeps setting up the bot when one step is rate limited', function () {
+    config(['app.url' => 'https://vihoantien.id.vn']);
+    URL::forceRootUrl('https://vihoantien.id.vn');
+    URL::forceScheme('https');
+    $this->telegramResponses = [
+        'setMyName' => Http::response(['ok' => false, 'error_code' => 429, 'description' => 'Too Many Requests: retry after 3600'], 429),
+    ];
+
+    $this->artisan('telegram:setup')->expectsOutputToContain('Too Many Requests')->assertFailed();
+
+    Http::assertSent(fn (Request $request) => str_ends_with($request->url(), '/setWebhook'));
+    Http::assertSent(fn (Request $request) => str_ends_with($request->url(), '/setMyCommands'));
+    Http::assertSent(fn (Request $request) => str_ends_with($request->url(), '/setMyShortDescription'));
+});
+
+it('lets members turn telegram notifications off without unlinking', function () {
+    $ticket = $this->user->supportTickets()->create(['type' => 'other', 'subject' => 'Thiếu đơn', 'status' => 'open']);
+    $this->user->update(['telegram_chat_id' => 555, 'telegram_username' => 'nguyenvana', 'telegram_linked_at' => now()]);
+
+    $this->actingAs($this->user)->get(route('dashboard.profile.edit'))->assertSee('aria-checked="true"', false);
+
+    $this->patch(route('dashboard.telegram.notifications'), ['enabled' => 0])->assertSessionHas('success');
+    $this->user->refresh();
+
+    expect($this->user->telegram_notifications)->toBeFalse()
+        ->and($this->user->telegram_chat_id)->toBe(555)
+        ->and((new TicketReplied($ticket))->via($this->user))->toBe(['database']);
+
+    $this->get(route('dashboard.profile.edit'))->assertSee('aria-checked="false"', false);
+
+    app(TelegramChannel::class)->send($this->user, new TicketReplied($ticket));
+    Http::assertNothingSent();
+
+    $this->patch(route('dashboard.telegram.notifications'), ['enabled' => 1]);
+    expect((new TicketReplied($ticket))->via($this->user->fresh()))->toBe(['database', TelegramChannel::class]);
+});
+
+it('toggles notifications from the bot with /thongbao', function () {
+    $this->user->update(['telegram_chat_id' => 555]);
+
+    sendToWebhook(telegramUpdate('/thongbao tắt'));
+    expect($this->user->fresh()->telegram_notifications)->toBeFalse()
+        ->and(lastTelegramText())->toContain('Đã <b>tắt</b> thông báo');
+
+    sendToWebhook(telegramUpdate('/thongbao'));
+    expect($this->user->fresh()->telegram_notifications)->toBeTrue()
+        ->and(lastTelegramText())->toContain('Đã <b>bật</b> thông báo');
+});
+
+it('turns notifications back on when linking again', function () {
+    $this->user->update(['telegram_notifications' => false]);
+
+    sendToWebhook(telegramUpdate('/start '.TelegramUpdateHandler::issueLinkToken($this->user)));
+
+    expect($this->user->fresh()->telegram_notifications)->toBeTrue();
 });
 
 it('suggests linking telegram on the overview until the member links or hides it', function () {

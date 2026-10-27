@@ -66,6 +66,29 @@
                     Đã liên kết {{ $user->telegram_username ? '@'.$user->telegram_username : 'tài khoản Telegram' }} từ {{ $user->telegram_linked_at?->format('d/m/Y') }}.
                     Bạn nhận thông báo đơn hàng, tiền về ví và có thể gửi link sản phẩm cho <a href="https://t.me/{{ config('services.telegram.bot_username') }}" target="_blank" rel="noopener" class="font-medium text-brand-700 hover:underline">{{ '@'.config('services.telegram.bot_username') }}</a> để lấy link hoàn tiền.
                 </p>
+                @php($telegramNotificationsOn = $user->telegram_notifications ?? true)
+                <form method="POST" action="{{ route('dashboard.telegram.notifications') }}" class="mt-3 flex items-center gap-3">
+                    @csrf
+                    @method('PATCH')
+                    <input type="hidden" name="enabled" value="{{ $telegramNotificationsOn ? 0 : 1 }}">
+                    <button
+                        type="submit"
+                        role="switch"
+                        aria-checked="{{ $telegramNotificationsOn ? 'true' : 'false' }}"
+                        aria-label="Nhận thông báo qua Telegram"
+                        @class([
+                            'relative inline-flex h-6 w-11 shrink-0 items-center rounded-full transition focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand-500',
+                            'bg-brand-600' => $telegramNotificationsOn,
+                            'bg-stone-300' => ! $telegramNotificationsOn,
+                        ])
+                    >
+                        <span @class(['inline-block size-5 rounded-full bg-white shadow transition', 'translate-x-5.5' => $telegramNotificationsOn, 'translate-x-0.5' => ! $telegramNotificationsOn])></span>
+                    </button>
+                    <span class="text-sm text-stone-700">
+                        Nhận thông báo qua Telegram
+                        <span class="block text-xs text-stone-500">{{ $telegramNotificationsOn ? 'Đơn mới, tiền về ví, rút tiền và phản hồi hỗ trợ.' : 'Đang tắt. Bot vẫn tạo link và tra cứu như bình thường.' }}</span>
+                    </span>
+                </form>
             @else
                 <p class="mt-1 text-sm text-stone-600">Liên kết với bot {{ '@'.config('services.telegram.bot_username') }} để nhận thông báo đơn hàng, tiền về ví ngay trên Telegram và tạo link hoàn tiền chỉ bằng cách gửi link sản phẩm. Sau khi bấm <span class="font-medium">Start</span> trong Telegram, quay lại và tải lại trang này.</p>
             @endif

@@ -25,6 +25,7 @@ class TelegramBot
         'donhang' => 'Xem đơn hàng gần đây',
         'ruttien' => 'Rút tiền về tài khoản ngân hàng',
         'gioithieu' => 'Lấy link giới thiệu bạn bè',
+        'thongbao' => 'Bật/tắt nhận thông báo qua Telegram',
         'trogiup' => 'Hướng dẫn sử dụng và liên hệ hỗ trợ',
         'huylienket' => 'Huỷ liên kết tài khoản với Telegram',
     ];
