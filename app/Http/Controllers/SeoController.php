@@ -63,7 +63,7 @@ class SeoController extends Controller
             '',
             'User-agent: *',
             'Disallow: /tai-khoan',
-            'Disallow: /admin',
+            'Disallow: /super/',
             'Disallow: /go/',
             'Disallow: /r/',
             'Disallow: /auth/',

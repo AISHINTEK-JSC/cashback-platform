@@ -28,11 +28,12 @@ class AdminPanelProvider extends PanelProvider
         return $panel
             ->default()
             ->id('admin')
-            ->path('admin')
+            ->path('super/admin')
             ->login()
             ->brandName(fn () => setting('site_name').' - Quản trị')
             ->brandLogo(fn () => view('filament.brand'))
             ->renderHook(PanelsRenderHook::HEAD_END, fn () => view('partials.favicons'))
+            ->renderHook(PanelsRenderHook::AUTH_LOGIN_FORM_AFTER, fn () => view('filament.login-theme-switcher'))
             ->colors([
                 'primary' => Color::Orange,
             ])

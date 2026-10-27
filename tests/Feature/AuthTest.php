@@ -75,8 +75,8 @@ it('logs out a member who gets locked mid-session', function () {
 });
 
 it('only lets staff into the admin panel', function () {
-    $this->actingAs(User::factory()->create())->get('/admin')->assertForbidden();
-    $this->actingAs(User::factory()->admin()->create())->get('/admin')->assertSuccessful();
+    $this->actingAs(User::factory()->create())->get('/super/admin')->assertForbidden();
+    $this->actingAs(User::factory()->admin()->create())->get('/super/admin')->assertSuccessful();
 });
 
 it('hides facebook login while it is disabled', function () {

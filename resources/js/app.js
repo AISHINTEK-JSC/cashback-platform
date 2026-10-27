@@ -47,4 +47,35 @@ document.addEventListener('alpine:init', () => {
             document.documentElement.classList.toggle('dark', isDark);
         },
     }));
+
+    // Nút "Cài ứng dụng": chỉ hiện khi trình duyệt cho cài PWA (Chrome/Edge/Android), Safari iOS không hỗ trợ sự kiện này
+    window.Alpine.data('pwaInstall', () => ({
+        canInstall: window.deferredInstallPrompt !== undefined,
+        init() {
+            window.addEventListener('pwa-installable', () => (this.canInstall = true));
+            window.addEventListener('appinstalled', () => (this.canInstall = false));
+        },
+        async install() {
+            const prompt = window.deferredInstallPrompt;
+            if (!prompt) {
+                return;
+            }
+
+            prompt.prompt();
+            await prompt.userChoice;
+            window.deferredInstallPrompt = undefined;
+            this.canInstall = false;
+        },
+    }));
 });
+
+// beforeinstallprompt có thể bắn trước khi Alpine khởi động nên giữ lại ở window
+window.addEventListener('beforeinstallprompt', (event) => {
+    event.preventDefault();
+    window.deferredInstallPrompt = event;
+    window.dispatchEvent(new Event('pwa-installable'));
+});
+
+if ('serviceWorker' in navigator) {
+    window.addEventListener('load', () => navigator.serviceWorker.register('/sw.js').catch(() => {}));
+}

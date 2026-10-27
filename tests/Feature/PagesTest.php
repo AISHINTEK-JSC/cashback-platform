@@ -8,6 +8,7 @@ use App\Models\SupportTicket;
 use App\Models\User;
 use App\Models\Voucher;
 use Illuminate\Http\UploadedFile;
+use Illuminate\Support\Facades\Route;
 use Illuminate\Support\Facades\Storage;
 
 beforeEach(function () {
@@ -154,4 +155,26 @@ it('stores member uploads on the uploads disk', function () {
     $avatarPath = str($user->fresh()->avatar)->after('/storage/')->toString();
     Storage::disk('uploads')->assertExists($avatarPath);
     Storage::disk('uploads')->assertExists(SupportTicket::sole()->messages()->sole()->attachments[0]);
+});
+
+it('shows the branded 404 page for unknown urls', function () {
+    $this->get('/trang-khong-ton-tai')
+        ->assertNotFound()
+        ->assertSee('Không tìm thấy trang')
+        ->assertSee(route('vouchers.index'))
+        ->assertSee('noindex, follow', false);
+
+    $this->actingAs(User::factory()->create())
+        ->get('/blog/bai-viet-khong-ton-tai')
+        ->assertNotFound()
+        ->assertSee('Ví của tôi');
+});
+
+it('shows the maintenance page with the expected downtime', function () {
+    Route::get('/test-maintenance', fn () => abort(503, headers: ['Retry-After' => 600]));
+
+    $this->get('/test-maintenance')
+        ->assertServiceUnavailable()
+        ->assertSee('Hệ thống đang')
+        ->assertSee('Dự kiến hoạt động lại sau khoảng 10 phút');
 });

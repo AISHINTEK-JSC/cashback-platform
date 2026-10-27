@@ -54,7 +54,7 @@ it('renders every admin page', function (string $path) {
 
     $path = strtr($path, ['{order}' => $order->id, '{withdrawal}' => $withdrawal->id, '{user}' => $withdrawal->user_id, '{ticket}' => $ticket->id]);
 
-    $this->get('/admin'.$path)->assertSuccessful();
+    $this->get('/super/admin'.$path)->assertSuccessful();
 })->with([
     '', '/withdrawals', '/withdrawals/{withdrawal}', '/orders', '/orders/{order}', '/users', '/users/{user}', '/users/{user}/edit',
     '/user-levels', '/platforms', '/commission-rules', '/vouchers', '/post-categories', '/posts', '/posts/create',
@@ -64,9 +64,9 @@ it('renders every admin page', function (string $path) {
 it('hides configuration from staff', function () {
     $this->actingAs(User::factory()->create(['role' => 'staff']));
 
-    $this->get('/admin/withdrawals')->assertSuccessful();
-    $this->get('/admin/commission-rules')->assertForbidden();
-    $this->get('/admin/manage-settings')->assertForbidden();
+    $this->get('/super/admin/withdrawals')->assertSuccessful();
+    $this->get('/super/admin/commission-rules')->assertForbidden();
+    $this->get('/super/admin/manage-settings')->assertForbidden();
 });
 
 it('marks a withdrawal as paid from the table', function () {
@@ -208,7 +208,7 @@ it('shows seo length hints and a preview link when editing a post', function () 
 });
 
 it('runs a whitelisted artisan command from the admin panel', function () {
-    $this->get('/admin/run-commands')->assertSuccessful()->assertSee('php artisan db:seed --class=BlogPostSeeder --force');
+    $this->get('/super/admin/run-commands')->assertSuccessful()->assertSee('php artisan db:seed --class=BlogPostSeeder --force');
 
     Livewire::test(RunCommands::class)
         ->callAction('run', arguments: ['command' => 'blog-posts'])
@@ -230,13 +230,13 @@ it('refuses commands outside the whitelist', function () {
 it('keeps the command page away from staff', function () {
     $this->actingAs(User::factory()->create(['role' => 'staff']));
 
-    $this->get('/admin/run-commands')->assertForbidden();
+    $this->get('/super/admin/run-commands')->assertForbidden();
 });
 
 it('shows the site favicons in the admin panel', function () {
     auth()->logout();
 
-    $this->get('/admin/login')
+    $this->get('/super/admin/login')
         ->assertSuccessful()
         ->assertSee('<link rel="icon" href="/favicon.ico" sizes="48x48">', false)
         ->assertSee('<link rel="icon" href="/favicon.svg" type="image/svg+xml">', false)

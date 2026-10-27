@@ -1,5 +1,5 @@
 # Chạy toàn bộ hệ thống: docker compose up -d --build
-# Web: http://localhost:8001  |  Admin: http://localhost:8001/admin  |  Mailpit: http://localhost:8025
+# Web: http://localhost:8001  |  Admin: http://localhost:8001/super/admin  |  Mailpit: http://localhost:8025
 
 x-app-environment: &app-environment
   APP_NAME: "Ví Hoàn Tiền"

@@ -8,7 +8,7 @@ Website hoàn tiền (cashback) cho Shopee, TikTok Shop, Lazada: thành viên d�
 
 - Laravel 13, PHP 8.3+
 - Blade + Livewire 4 + Tailwind CSS 4 cho trang công khai và dashboard thành viên
-- Filament 5 cho trang quản trị `/admin`
+- Filament 5 cho trang quản trị `/super/admin`
 - PostgreSQL trên Supabase (local Docker + production dùng chung), SQLite (dev/test)
 - Pest cho test
 
@@ -23,7 +23,7 @@ docker compose up -d --build
 | Địa chỉ | Dùng để |
 |---|---|
 | http://localhost:8001 | Website |
-| http://localhost:8001/admin | Trang quản trị |
+| http://localhost:8001/super/admin | Trang quản trị |
 | http://localhost:8025 | Mailpit, xem email hệ thống gửi (quên mật khẩu...) |
 
 Container `app` tự tạo `APP_KEY` ở lần chạy đầu và chạy migrate lên Supabase. **DB này dùng chung với production**: không seed demo (`SEED_DATABASE=true`), không chạy `migrate:fresh`/`db:wipe`. Các container:

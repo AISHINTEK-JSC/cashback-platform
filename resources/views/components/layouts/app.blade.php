@@ -144,6 +144,9 @@
                 @guest
                     <a href="{{ route('login') }}" class="rounded-lg px-3 py-2.5 font-medium text-stone-700 hover:bg-stone-100">Đăng nhập</a>
                 @endguest
+                <button type="button" x-data="pwaInstall" x-show="canInstall" x-cloak @click="install()" class="flex items-center gap-2 rounded-lg px-3 py-2.5 text-left font-medium text-brand-700 hover:bg-stone-100">
+                    <x-heroicon-o-arrow-down-tray class="size-5" /> Cài ứng dụng
+                </button>
             </div>
         </nav>
     </header>
@@ -168,6 +171,9 @@
                         <a href="{{ $facebook }}" class="font-medium text-stone-900" target="_blank" rel="noopener">Fanpage</a>
                     @endif
                 </div>
+                <button type="button" x-data="pwaInstall" x-show="canInstall" x-cloak @click="install()" class="btn btn-secondary mt-4">
+                    <x-heroicon-o-arrow-down-tray class="size-5 text-brand-600" /> Cài ứng dụng {{ $siteName }}
+                </button>
             </div>
             <div>
                 <p class="text-sm font-semibold text-stone-900">Khám phá</p>
