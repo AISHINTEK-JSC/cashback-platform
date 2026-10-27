@@ -7,6 +7,7 @@ use App\Enums\UserStatus;
 use Database\Factories\UserFactory;
 use Filament\Models\Contracts\FilamentUser;
 use Filament\Panel;
+use Illuminate\Contracts\Auth\MustVerifyEmail;
 use Illuminate\Database\Eloquent\Attributes\Fillable;
 use Illuminate\Database\Eloquent\Attributes\Hidden;
 use Illuminate\Database\Eloquent\Builder;
@@ -21,7 +22,7 @@ use Illuminate\Support\Str;
 
 #[Fillable(['name', 'email', 'phone', 'password', 'avatar', 'referred_by', 'level_id', 'role', 'status', 'email_verified_at', 'last_login_at', 'last_login_ip'])]
 #[Hidden(['password', 'remember_token', 'two_factor_secret'])]
-class User extends Authenticatable implements FilamentUser
+class User extends Authenticatable implements FilamentUser, MustVerifyEmail
 {
     /** @use HasFactory<UserFactory> */
     use HasFactory, Notifiable, SoftDeletes;

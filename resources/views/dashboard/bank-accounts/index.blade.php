@@ -19,6 +19,9 @@
                             @endif
                         </p>
                         <p class="truncate text-sm text-stone-600"><span class="font-mono">{{ $account->account_number }}</span> · {{ $account->account_name }}</p>
+                        @if ($availableAt = $account->withdrawableFrom())
+                            <p class="mt-1 inline-flex items-center gap-1 text-xs font-medium text-amber-700"><x-heroicon-o-clock class="size-3.5" /> Nhận được tiền rút từ {{ $availableAt->format('H:i d/m/Y') }}</p>
+                        @endif
                     </div>
                     <div class="flex shrink-0 items-center gap-1">
                         @unless ($account->is_default)
@@ -57,7 +60,7 @@
             </div>
             <x-form.input name="account_number" label="Số tài khoản / số điện thoại ví" inputmode="numeric" required />
             <x-form.input name="account_name" label="Tên chủ tài khoản" hint="Viết đúng như trên thẻ, hệ thống tự chuyển thành chữ in hoa không dấu." required />
-            <p class="flex gap-2 rounded-xl bg-amber-50 p-3 text-xs text-amber-900"><x-heroicon-o-shield-check class="size-4 shrink-0" /> Tài khoản phải đứng tên bạn. Một tài khoản ngân hàng dùng cho nhiều tài khoản thành viên sẽ bị xem xét gian lận.</p>
+            <p class="flex gap-2 rounded-xl bg-amber-50 p-3 text-xs text-amber-900"><x-heroicon-o-shield-check class="size-4 shrink-0" /> Tài khoản phải đứng tên bạn. Một tài khoản ngân hàng dùng cho nhiều tài khoản thành viên sẽ bị xem xét gian lận.@if ($holdHours = (int) setting('withdraw_new_bank_hold_hours')) Tài khoản mới thêm nhận được tiền rút sau {{ $holdHours }} giờ để phòng trường hợp tài khoản thành viên bị chiếm.@endif</p>
             <button type="submit" class="btn btn-primary w-full">Lưu tài khoản</button>
         </form>
     </div>

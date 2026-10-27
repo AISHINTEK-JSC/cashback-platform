@@ -6,6 +6,7 @@ use Illuminate\Database\Eloquent\Attributes\Fillable;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Illuminate\Support\Carbon;
 
 #[Fillable(['user_id', 'bank_code', 'bank_name', 'account_number', 'account_name', 'is_default', 'verified_at'])]
 class UserBankAccount extends Model
@@ -29,6 +30,16 @@ class UserBankAccount extends Model
     public function user(): BelongsTo
     {
         return $this->belongsTo(User::class);
+    }
+
+    /**
+     * Thời điểm tài khoản mới thêm bắt đầu nhận được tiền rút; null khi đã hết thời gian khoá.
+     */
+    public function withdrawableFrom(): ?Carbon
+    {
+        $availableAt = $this->created_at?->copy()->addHours((int) setting('withdraw_new_bank_hold_hours'));
+
+        return $availableAt?->isFuture() ? $availableAt : null;
     }
 
     public function maskedNumber(): string

@@ -19,7 +19,7 @@ it('registers a member with a referral code and creates a wallet', function () {
         'password_confirmation' => 'matkhau123',
         'referral_code' => $referrer->referral_code,
         'terms' => '1',
-    ])->assertRedirect(route('dashboard.index'));
+    ])->assertRedirect(route('verification.notice'));
 
     $user = User::where('email', 'b@example.com')->sole();
     expect($user->referred_by)->toBe($referrer->id)

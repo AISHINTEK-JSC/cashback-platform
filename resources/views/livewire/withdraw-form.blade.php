@@ -23,7 +23,7 @@
                 <label class="label" for="bankAccountId">Nhận tiền về</label>
                 <select id="bankAccountId" wire:model="bankAccountId" class="input">
                     @foreach ($bankAccounts as $account)
-                        <option value="{{ $account->id }}" wire:key="bank-{{ $account->id }}">{{ $account->bank_name }} - {{ $account->maskedNumber() }} - {{ $account->account_name }}</option>
+                        <option value="{{ $account->id }}" wire:key="bank-{{ $account->id }}">{{ $account->bank_name }} - {{ $account->maskedNumber() }} - {{ $account->account_name }}@if ($availableAt = $account->withdrawableFrom()) (nhận tiền từ {{ $availableAt->format('H:i d/m') }})@endif</option>
                     @endforeach
                 </select>
                 @error('bankAccountId') <p class="field-error">{{ $message }}</p> @enderror

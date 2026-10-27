@@ -6,6 +6,7 @@ use App\Http\Controllers\Controller;
 use App\Services\Auth\LoginTracker;
 use App\Services\Auth\RegisterUser;
 use App\Services\ReferralService;
+use Illuminate\Auth\Events\Registered;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
@@ -47,11 +48,14 @@ class RegisterController extends Controller
             $data['referral_code'] ?? null,
         );
 
+        // Gửi mail lỗi thì vẫn cho vào trang xác thực để bấm gửi lại, không làm hỏng việc đăng ký
+        rescue(fn () => event(new Registered($user)));
+
         Auth::login($user);
         $request->session()->regenerate();
         $tracker->record($user, 'register');
         Cookie::queue(Cookie::forget(ReferralService::COOKIE));
 
-        return redirect()->route('dashboard.index')->with('success', 'Chào mừng bạn! Dán link sản phẩm để bắt đầu nhận hoàn tiền.');
+        return redirect()->route('verification.notice');
     }
 }

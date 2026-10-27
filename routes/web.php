@@ -1,5 +1,6 @@
 <?php
 
+use App\Http\Controllers\Auth\EmailVerificationController;
 use App\Http\Controllers\Auth\LoginController;
 use App\Http\Controllers\Auth\PasswordResetController;
 use App\Http\Controllers\Auth\RegisterController;
@@ -62,13 +63,19 @@ Route::middleware('guest')->group(function () {
 
 Route::post('/dang-xuat', [LoginController::class, 'destroy'])->middleware('auth')->name('logout');
 
+Route::middleware('auth')->prefix('xac-thuc-email')->name('verification.')->group(function () {
+    Route::get('/', [EmailVerificationController::class, 'notice'])->name('notice');
+    Route::get('/{id}/{hash}', [EmailVerificationController::class, 'verify'])->middleware(['signed', 'throttle:6,1'])->name('verify');
+    Route::post('/gui-lai', [EmailVerificationController::class, 'send'])->middleware('throttle:6,1')->name('send');
+});
+
 /*
 |--------------------------------------------------------------------------
 | Tài khoản thành viên
 |--------------------------------------------------------------------------
 */
 
-Route::middleware(['auth', 'active'])->prefix('tai-khoan')->name('dashboard.')->group(function () {
+Route::middleware(['auth', 'active', 'verified'])->prefix('tai-khoan')->name('dashboard.')->group(function () {
     Route::get('/', Dashboard\OverviewController::class)->name('index');
 
     Route::get('/link-hoan-tien', [Dashboard\TrackingLinkController::class, 'index'])->name('links.index');

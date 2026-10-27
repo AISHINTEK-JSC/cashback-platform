@@ -210,3 +210,21 @@ it('shows share links on published posts but not on previews', function () {
         ->assertSuccessful()
         ->assertDontSee('Chia sẻ lên Facebook');
 });
+
+it('renders the terms and privacy pages with live settings', function () {
+    app(Settings::class)->set('withdraw_min', 50000);
+    app(Settings::class)->set('withdraw_new_bank_hold_hours', 24);
+
+    $this->get(route('pages.terms'))
+        ->assertOk()
+        ->assertSee('Điều khoản sử dụng')
+        ->assertSee(vnd(50000))
+        ->assertSee('sau <strong>24 giờ</strong>', false)
+        ->assertDontSee('Bản mẫu');
+
+    $this->get(route('pages.privacy'))
+        ->assertOk()
+        ->assertSee('Nghị định 13/2023/NĐ-CP')
+        ->assertSee('Khi đăng nhập bằng Google')
+        ->assertDontSee('Bản mẫu');
+});

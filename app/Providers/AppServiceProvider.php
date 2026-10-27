@@ -4,6 +4,7 @@ namespace App\Providers;
 
 use App\Services\Affiliate\AffiliateManager;
 use App\Support\Settings;
+use Illuminate\Auth\Middleware\EnsureEmailIsVerified;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Foundation\Events\DiagnosingHealth;
 use Illuminate\Support\Carbon;
@@ -11,6 +12,7 @@ use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Event;
 use Illuminate\Support\Facades\URL;
 use Illuminate\Support\ServiceProvider;
+use Livewire\Livewire;
 
 class AppServiceProvider extends ServiceProvider
 {
@@ -41,5 +43,8 @@ class AppServiceProvider extends ServiceProvider
         }
 
         Event::listen(DiagnosingHealth::class, fn () => DB::select('select 1'));
+
+        // Request cập nhật của Livewire trên trang tài khoản cũng phải qua kiểm tra đã xác thực email như trang gốc
+        Livewire::addPersistentMiddleware([EnsureEmailIsVerified::class]);
     }
 }

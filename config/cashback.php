@@ -28,6 +28,8 @@ return [
         'withdraw_max' => 20000000,
         'withdraw_fee' => 0,
         'withdraw_max_pending' => 1,
+        // Tài khoản nhận tiền mới thêm phải chờ ngần này giờ mới nhận được tiền rút (chống chiếm tài khoản rồi đổi STK), 0 = tắt
+        'withdraw_new_bank_hold_hours' => 24,
 
         // Điểm danh: thưởng theo ngày thứ n trong chuỗi, lặp lại sau khi hết mảng
         'checkin_rewards' => '100,100,200,200,300,300,500',

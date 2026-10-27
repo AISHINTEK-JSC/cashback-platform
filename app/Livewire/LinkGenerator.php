@@ -39,6 +39,12 @@ class LinkGenerator extends Component
             return;
         }
 
+        if (! $user->hasVerifiedEmail()) {
+            $this->redirectRoute('verification.notice');
+
+            return;
+        }
+
         $this->validate();
 
         $key = 'link-generate:'.$user->id;

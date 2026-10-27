@@ -83,6 +83,10 @@ class ManageSettings extends Page
                         TextInput::make('withdraw_max')->label('Tối đa mỗi lần (0 = không giới hạn)')->integer()->minValue(0)->suffix('đ')->required(),
                         TextInput::make('withdraw_fee')->label('Phí mỗi lần')->integer()->minValue(0)->suffix('đ')->required(),
                         TextInput::make('withdraw_max_pending')->label('Số yêu cầu chờ tối đa')->integer()->minValue(1)->required(),
+                        TextInput::make('withdraw_new_bank_hold_hours')
+                            ->label('Khoá rút về tài khoản mới thêm')
+                            ->helperText('Số giờ phải chờ sau khi thành viên thêm tài khoản ngân hàng, 0 = tắt.')
+                            ->integer()->minValue(0)->maxValue(168)->suffix('giờ')->required(),
                     ]),
                 Section::make('Điểm danh')
                     ->schema([

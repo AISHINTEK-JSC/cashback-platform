@@ -108,3 +108,31 @@ it('does not let a member cancel someone else request', function () {
 
     expect($withdrawal->fresh()->status)->toBe(WithdrawalStatus::Pending);
 });
+
+it('holds withdrawals to a newly added bank account', function () {
+    $newBank = UserBankAccount::factory()->for($this->user)->justAdded()->create(['is_default' => false]);
+
+    expect(fn () => $this->service->request($this->user, $newBank, 100000))
+        ->toThrow(BusinessRuleException::class, 'mới được thêm');
+    expect($this->user->wallet->fresh()->available_balance)->toBe(200000);
+
+    $this->travel(25)->hours();
+
+    expect($this->service->request($this->user, $newBank->fresh(), 100000)->status)->toBe(WithdrawalStatus::Pending);
+});
+
+it('lets admins turn the new bank account hold off', function () {
+    app(Settings::class)->set('withdraw_new_bank_hold_hours', 0);
+    $newBank = UserBankAccount::factory()->for($this->user)->justAdded()->create(['is_default' => false]);
+
+    expect($this->service->request($this->user, $newBank, 100000)->status)->toBe(WithdrawalStatus::Pending);
+});
+
+it('shows when a new bank account can receive withdrawals', function () {
+    $newBank = UserBankAccount::factory()->for($this->user)->justAdded()->create(['is_default' => false]);
+
+    $this->actingAs($this->user)
+        ->get(route('dashboard.bank-accounts.index'))
+        ->assertOk()
+        ->assertSee('Nhận được tiền rút từ '.$newBank->created_at->addDay()->format('H:i d/m/Y'));
+});

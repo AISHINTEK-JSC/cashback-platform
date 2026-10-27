@@ -35,6 +35,10 @@ class WithdrawalService
             throw new BusinessRuleException('Tài khoản ngân hàng không hợp lệ.');
         }
 
+        if ($availableAt = $bankAccount->withdrawableFrom()) {
+            throw new BusinessRuleException("Tài khoản {$bankAccount->bank_name} mới được thêm. Để bảo vệ bạn, tài khoản này nhận được tiền rút từ {$availableAt->format('H:i d/m/Y')}.");
+        }
+
         $min = (int) setting('withdraw_min');
         $max = (int) setting('withdraw_max');
 
