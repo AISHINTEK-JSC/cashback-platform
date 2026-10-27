@@ -14,7 +14,10 @@
             @forelse ($platforms as $platform)
                 <div class="card overflow-hidden">
                     <div class="flex items-center justify-between border-b border-stone-200 px-5 py-4">
-                        <x-platform-badge :platform="$platform" class="!text-sm" />
+                        <a href="{{ route('platforms.show', $platform) }}" class="flex items-center gap-2 text-sm font-medium text-stone-700 hover:text-brand-700">
+                            <x-platform-badge :platform="$platform" class="!text-sm" />
+                            Xem trang hoàn tiền
+                        </a>
                         <span class="text-xs text-stone-500">Chốt đơn sau ~{{ $platform->lock_days }} ngày</span>
                     </div>
                     <div class="overflow-x-auto">

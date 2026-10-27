@@ -10,6 +10,7 @@ use BackedEnum;
 use Filament\Actions\EditAction;
 use Filament\Forms\Components\FileUpload;
 use Filament\Forms\Components\KeyValue;
+use Filament\Forms\Components\RichEditor;
 use Filament\Forms\Components\Select;
 use Filament\Forms\Components\TextInput;
 use Filament\Forms\Components\Toggle;
@@ -65,6 +66,11 @@ class PlatformResource extends Resource
                 Toggle::make('is_active')->label('Đang bật')->inline(false),
                 Toggle::make('is_coming_soon')->label('Hiển thị "Sắp ra mắt" khi chưa bật')->inline(false),
                 FileUpload::make('logo')->label('Logo')->helperText('Để trống thì dùng logo mặc định trong public/images/platforms (nếu có).')->image()->disk('uploads')->visibility('public')->directory('platforms'),
+                RichEditor::make('landing_content')
+                    ->label('Nội dung trang Hoàn tiền của sàn')
+                    ->helperText(fn (?Platform $record) => 'Hiện ở trang '.($record ? route('platforms.show', $record) : '/hoan-tien/<mã sàn>').'. Viết riêng cho sàn này (mẹo mua sắm, ngành hàng hoàn cao, lưu ý khi mua) để trang có nội dung độc nhất, giúp lên Google tốt hơn.')
+                    ->toolbarButtons(['h2', 'h3', 'bold', 'italic', 'link', 'bulletList', 'orderedList', 'blockquote', 'undo', 'redo'])
+                    ->columnSpanFull(),
                 KeyValue::make('api_config')
                     ->label('Cấu hình API (được mã hoá)')
                     ->keyLabel('Khoá')

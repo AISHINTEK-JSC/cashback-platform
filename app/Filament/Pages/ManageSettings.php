@@ -67,6 +67,10 @@ class ManageSettings extends Page
                             ->helperText('Hiển thị trong Điều khoản và Chính sách bảo mật, bỏ trống thì ghi "một cá nhân".')
                             ->maxLength(150),
                         TextInput::make('operator_address')->label('Địa chỉ vận hành')->maxLength(255),
+                        Toggle::make('transparency_page')
+                            ->label('Bật trang Minh bạch chi trả (/minh-bach)')
+                            ->helperText('Công khai tổng tiền đã chi trả, thời gian xử lý rút tiền và các lần chi trả gần đây (tên đã che). Có thể tắt khi số liệu còn ít.')
+                            ->inline(false),
                     ]),
                 Section::make('SEO & thống kê')
                     ->description('Gắn Google Analytics 4 và xác minh Google Search Console. GA chỉ chạy trên môi trường production.')

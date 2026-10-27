@@ -195,6 +195,9 @@
                 <ul class="mt-3 space-y-2 text-sm text-stone-600">
                     <li><a href="{{ route('pages.guide') }}" class="hover:text-stone-900">Hướng dẫn nhận hoàn tiền</a></li>
                     <li><a href="{{ route('pages.faq') }}" class="hover:text-stone-900">Câu hỏi thường gặp</a></li>
+                    @if (setting('transparency_page'))
+                        <li><a href="{{ route('pages.transparency') }}" class="hover:text-stone-900">Minh bạch chi trả</a></li>
+                    @endif
                     <li><a href="{{ route('pages.terms') }}" class="hover:text-stone-900">Điều khoản sử dụng</a></li>
                     <li><a href="{{ route('pages.privacy') }}" class="hover:text-stone-900">Chính sách bảo mật</a></li>
                 </ul>

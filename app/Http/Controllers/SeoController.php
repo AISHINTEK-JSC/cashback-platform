@@ -21,6 +21,12 @@ class SeoController extends Controller
             $urls = collect([
                 ['loc' => route('home'), 'priority' => '1.0', 'changefreq' => 'daily'],
                 ['loc' => route('vouchers.index'), 'priority' => '0.9', 'changefreq' => 'daily'],
+                // Trang "Hoàn tiền <sàn>" của các sàn đang bật (sàn sắp ra mắt bị noindex nên không đưa vào)
+                ...Platform::query()->active()->orderBy('id')->get()->map(fn (Platform $platform) => [
+                    'loc' => route('platforms.show', $platform),
+                    'priority' => '0.9',
+                    'changefreq' => 'weekly',
+                ]),
                 // Chỉ đưa trang voucher của sàn đang có mã, trang trống bị noindex
                 ...Platform::query()->active()->whereHas('vouchers', fn ($query) => $query->available())->orderBy('id')->get()->map(fn (Platform $platform) => [
                     'loc' => route('vouchers.platform', $platform),
@@ -42,6 +48,7 @@ class SeoController extends Controller
                 ]),
                 ['loc' => route('pages.guide'), 'priority' => '0.6', 'changefreq' => 'monthly'],
                 ['loc' => route('pages.faq'), 'priority' => '0.6', 'changefreq' => 'monthly'],
+                ...(setting('transparency_page') ? [['loc' => route('pages.transparency'), 'priority' => '0.6', 'changefreq' => 'daily']] : []),
                 ['loc' => route('pages.terms'), 'priority' => '0.3', 'changefreq' => 'yearly'],
                 ['loc' => route('pages.privacy'), 'priority' => '0.3', 'changefreq' => 'yearly'],
             ]);

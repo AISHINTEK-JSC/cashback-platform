@@ -64,6 +64,11 @@
             <x-stat-card label="Đơn hàng được hoàn tiền" :value="number_format($stats['orders'], 0, ',', '.')" />
             <x-stat-card label="Tổng tiền đã hoàn cho thành viên" :value="vnd($stats['paid_out'])" tone="brand" />
         </div>
+        @if (setting('transparency_page'))
+            <p class="mt-3 text-center text-sm">
+                <a href="{{ route('pages.transparency') }}" class="font-semibold text-brand-700 hover:underline">Xem số liệu chi trả minh bạch</a>
+            </p>
+        @endif
     </section>
 
     {{-- Quy trình 3 bước --}}

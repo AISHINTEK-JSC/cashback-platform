@@ -22,6 +22,8 @@ return [
         // Bên vận hành nêu trong Điều khoản/Chính sách bảo mật (Nghị định 13/2023 yêu cầu nêu rõ bên xử lý dữ liệu)
         'operator_name' => 'Lê Văn Thành',
         'operator_address' => 'Tây Mỗ, Hà Nội',
+        // Trang công khai /minh-bach: tổng tiền đã chi trả, thời gian xử lý rút tiền (tắt khi số liệu còn quá ít)
+        'transparency_page' => true,
 
         // SEO & thống kê: GA4 (G-XXXX) chỉ chạy ở production, mã xác minh là phần content của thẻ meta Search Console
         'google_analytics_id' => env('GOOGLE_ANALYTICS_ID', ''),

@@ -10,7 +10,7 @@ use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Support\Facades\Storage;
 
-#[Fillable(['code', 'driver', 'name', 'logo', 'api_config', 'lock_days', 'max_commission_rate', 'is_active', 'is_coming_soon'])]
+#[Fillable(['code', 'driver', 'name', 'logo', 'api_config', 'lock_days', 'max_commission_rate', 'is_active', 'is_coming_soon', 'landing_content'])]
 #[Hidden(['api_config'])]
 class Platform extends Model
 {
