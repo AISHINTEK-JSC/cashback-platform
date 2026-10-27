@@ -3,10 +3,13 @@
 use App\Models\CommissionRule;
 use App\Models\Platform;
 use Illuminate\Foundation\Testing\RefreshDatabase;
+use Illuminate\Support\Facades\Http;
 use Tests\TestCase;
 
 pest()->extend(TestCase::class)
     ->use(RefreshDatabase::class)
+    // Không gọi API thật khi chạy test; danh sách ngân hàng tự dùng bản sao lưu khi request bị chặn
+    ->beforeEach(fn () => Http::preventStrayRequests())
     ->in('Feature');
 
 /**

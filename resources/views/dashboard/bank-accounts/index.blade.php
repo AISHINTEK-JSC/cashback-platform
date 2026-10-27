@@ -6,11 +6,18 @@
                     'card flex items-center gap-4 p-4',
                     '!border-brand-300 ring-2 ring-brand-500/10' => $account->is_default,
                 ])>
-                    <span @class([
-                        'grid size-11 shrink-0 place-items-center rounded-xl',
-                        'bg-brand-50 text-brand-600' => $account->is_default,
-                        'bg-stone-100 text-stone-500' => ! $account->is_default,
-                    ])><x-heroicon-o-building-library class="size-6" /></span>
+                    @if ($logo = $banks[$account->bank_code]['logo'] ?? null)
+                        {{-- Logo VietQR có nền trắng nên giữ khung trắng ở cả chế độ tối --}}
+                        <span class="grid size-11 shrink-0 place-items-center overflow-hidden rounded-xl bg-white p-1 ring-1 ring-stone-200">
+                            <img src="{{ $logo }}" alt="" class="max-h-full object-contain" loading="lazy">
+                        </span>
+                    @else
+                        <span @class([
+                            'grid size-11 shrink-0 place-items-center rounded-xl',
+                            'bg-brand-50 text-brand-600' => $account->is_default,
+                            'bg-stone-100 text-stone-500' => ! $account->is_default,
+                        ])><x-heroicon-o-building-library class="size-6" /></span>
+                    @endif
                     <div class="min-w-0 flex-1">
                         <p class="flex flex-wrap items-center gap-2 font-semibold text-stone-900">
                             {{ $account->bank_name }}
@@ -52,8 +59,8 @@
                 <label for="bank_code" class="label">Ngân hàng / ví</label>
                 <select id="bank_code" name="bank_code" class="input" required>
                     <option value="">Chọn ngân hàng</option>
-                    @foreach ($banks as $code => $name)
-                        <option value="{{ $code }}" @selected(old('bank_code') === $code)>{{ $name }}</option>
+                    @foreach ($banks as $code => $bank)
+                        <option value="{{ $code }}" @selected(old('bank_code') === $code)>{{ $bank['short_name'] }} - {{ $bank['name'] }}</option>
                     @endforeach
                 </select>
                 @error('bank_code') <p class="field-error">{{ $message }}</p> @enderror

@@ -21,7 +21,7 @@ class BankAccountController extends Controller
     {
         return view('dashboard.bank-accounts.index', [
             'accounts' => $request->user()->bankAccounts()->orderByDesc('is_default')->latest()->get(),
-            'banks' => Banks::all(),
+            'banks' => Banks::list(),
         ]);
     }
 
@@ -43,7 +43,7 @@ class BankAccountController extends Controller
 
         $account = DB::transaction(fn () => $user->bankAccounts()->create([
             'bank_code' => $data['bank_code'],
-            'bank_name' => Banks::all()[$data['bank_code']],
+            'bank_name' => Banks::find($data['bank_code'])['short_name'],
             'account_number' => $data['account_number'],
             'account_name' => Str::upper(Str::ascii($data['account_name'])),
             'is_default' => ! $user->bankAccounts()->exists(),
