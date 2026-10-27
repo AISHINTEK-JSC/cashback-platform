@@ -1,5 +1,6 @@
 <?php
 
+use App\Enums\BonusType;
 use App\Enums\WalletBucket;
 use App\Enums\WalletTransactionType;
 use App\Models\User;
@@ -289,6 +290,8 @@ it('turns notifications back on when linking again', function () {
 });
 
 it('suggests linking telegram on the overview until the member links or hides it', function () {
+    // Danh sách việc cần làm của người mới đã có bước Telegram nên thẻ gợi ý riêng chỉ hiện sau khi xong danh sách
+    $this->user->bonuses()->create(['type' => BonusType::Onboarding, 'amount' => 5000]);
     $this->actingAs($this->user)->get(route('dashboard.index'))->assertSee('Nhận thông báo và tạo link ngay trên Telegram');
 
     $this->post(route('dashboard.telegram.dismiss-prompt'))->assertSessionHas('success');
@@ -302,6 +305,7 @@ it('hides the overview suggestion for linked members, when turned off or when th
     $linked = User::factory()->create(['telegram_chat_id' => 777]);
     $this->actingAs($linked)->get(route('dashboard.index'))->assertDontSee('Nhận thông báo và tạo link ngay trên Telegram');
 
+    $this->user->bonuses()->create(['type' => BonusType::Onboarding, 'amount' => 5000]);
     app(Settings::class)->set('telegram_dashboard_prompt', false);
     $this->actingAs($this->user)->get(route('dashboard.index'))->assertDontSee('Nhận thông báo và tạo link ngay trên Telegram');
 

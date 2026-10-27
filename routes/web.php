@@ -81,6 +81,7 @@ Route::middleware('auth')->prefix('xac-thuc-email')->name('verification.')->grou
 
 Route::middleware(['auth', 'active', 'verified'])->prefix('tai-khoan')->name('dashboard.')->group(function () {
     Route::get('/', Dashboard\OverviewController::class)->name('index');
+    Route::post('/nhan-thuong-huong-dan', Dashboard\OnboardingController::class)->middleware('throttle:10,1')->name('onboarding.claim');
 
     Route::get('/link-hoan-tien', [Dashboard\TrackingLinkController::class, 'index'])->name('links.index');
     Route::get('/chia-se', Dashboard\ShareTargetController::class)->name('share-target');
@@ -89,6 +90,7 @@ Route::middleware(['auth', 'active', 'verified'])->prefix('tai-khoan')->name('da
     Route::get('/don-hang/{order}', [Dashboard\OrderController::class, 'show'])->name('orders.show');
 
     Route::get('/bien-dong-so-du', Dashboard\WalletController::class)->name('wallet.index');
+    Route::get('/bien-dong-so-du/xuat-csv', [Dashboard\WalletController::class, 'export'])->middleware('throttle:10,1')->name('wallet.export');
 
     Route::get('/rut-tien', [Dashboard\WithdrawalController::class, 'index'])->name('withdrawals.index');
     Route::post('/rut-tien/{withdrawal}/huy', [Dashboard\WithdrawalController::class, 'cancel'])->name('withdrawals.cancel');

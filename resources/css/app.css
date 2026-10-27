@@ -205,3 +205,19 @@ html.dark {
         @apply rounded-xl;
     }
 }
+
+/*
+ * Màu biểu đồ (bảng màu categorical đã kiểm tra mù màu/độ tương phản, skill dataviz):
+ * 3 màu đầu cho nền sáng, bản riêng cho nền tối, không đảo tự động theo thang stone.
+ */
+.viz-earnings {
+    --series-1: #2a78d6;
+    --series-2: #eb6834;
+    --series-3: #1baf7a;
+}
+
+html.dark .viz-earnings {
+    --series-1: #3987e5;
+    --series-2: #d95926;
+    --series-3: #199e70;
+}

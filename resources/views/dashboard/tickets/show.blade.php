@@ -7,6 +7,27 @@
         @endif
     </div>
 
+    @if ($ticket->type === \App\Enums\TicketType::MissingOrder && $ticket->details)
+        <dl class="card mb-6 grid gap-x-6 gap-y-3 p-4 text-sm sm:grid-cols-2">
+            <div>
+                <dt class="text-xs text-stone-500">Sàn · Mã đơn</dt>
+                <dd class="font-medium text-stone-900">{{ $ticket->platform?->name }} · <span class="font-mono">{{ $ticket->platform_order_id }}</span></dd>
+            </div>
+            <div>
+                <dt class="text-xs text-stone-500">Ngày đặt hàng</dt>
+                <dd class="font-medium text-stone-900">{{ \Illuminate\Support\Carbon::parse($ticket->details['purchased_at'])->format('d/m/Y') }}</dd>
+            </div>
+            <div>
+                <dt class="text-xs text-stone-500">Giá trị đơn</dt>
+                <dd class="font-medium text-stone-900">{{ filled($ticket->details['order_amount'] ?? null) ? vnd($ticket->details['order_amount']) : 'Không khai báo' }}</dd>
+            </div>
+            <div>
+                <dt class="text-xs text-stone-500">Link hoàn tiền đã dùng</dt>
+                <dd class="truncate font-medium text-stone-900">{{ $claimLink ? $claimLink->created_at->format('d/m H:i').' · '.($claimLink->product_name ?? 'Sản phẩm') : 'Không chọn' }}</dd>
+            </div>
+        </dl>
+    @endif
+
     <div class="space-y-4">
         @foreach ($ticket->messages as $message)
             @php $mine = $message->user_id === auth()->id(); @endphp

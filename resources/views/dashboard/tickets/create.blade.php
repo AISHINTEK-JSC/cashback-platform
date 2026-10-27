@@ -10,32 +10,95 @@
             </select>
         </div>
 
-        <div class="grid gap-4 sm:grid-cols-2" x-show="type === 'missing_order' || type === 'wrong_amount'">
-            <div>
-                <label for="platform_id" class="label">Sàn</label>
-                <select id="platform_id" name="platform_id" class="input">
-                    <option value="">Chọn sàn</option>
-                    @foreach ($platforms as $platform)
-                        <option value="{{ $platform->id }}" @selected((string) old('platform_id') === (string) $platform->id)>{{ $platform->name }}</option>
-                    @endforeach
-                </select>
+        {{-- Khiếu nại thiếu đơn: mẫu có cấu trúc để hệ thống tự đối chiếu --}}
+        <template x-if="type === 'missing_order'">
+            <div class="space-y-4">
+                <div class="flex gap-2 rounded-xl bg-sky-50 p-3 text-sm text-sky-900 dark:bg-sky-950 dark:text-sky-200">
+                    <x-heroicon-o-information-circle class="size-5 shrink-0" />
+                    <div>
+                        <p class="font-medium">Trước khi gửi, hãy kiểm tra:</p>
+                        <ul class="mt-1 list-disc space-y-0.5 pl-4">
+                            <li>Đơn đặt từ hôm qua trở về trước (đơn thường hiện trong vòng 24 giờ).</li>
+                            <li>Bạn đã mở link hoàn tiền rồi mua ngay trong phiên đó, không bấm link tiếp thị khác.</li>
+                            <li>Đơn chưa có trong mục <a href="{{ route('dashboard.orders.index') }}" class="font-semibold underline">Đơn hàng</a>.</li>
+                        </ul>
+                    </div>
+                </div>
+
+                <div class="grid gap-4 sm:grid-cols-2">
+                    <div>
+                        <label for="platform_id" class="label">Sàn</label>
+                        <select id="platform_id" name="platform_id" class="input" required>
+                            <option value="">Chọn sàn</option>
+                            @foreach ($platforms as $platform)
+                                <option value="{{ $platform->id }}" @selected((string) old('platform_id') === (string) $platform->id)>{{ $platform->name }}</option>
+                            @endforeach
+                        </select>
+                        @error('platform_id') <p class="field-error">{{ $message }}</p> @enderror
+                    </div>
+                    <x-form.input name="platform_order_id" label="Mã đơn hàng trên sàn" :value="$prefill['platform_order_id'] ?? null" required />
+                    <x-form.input name="purchased_at" type="date" label="Ngày đặt hàng" :max="today()->toDateString()" :min="today()->subDays(90)->toDateString()" required />
+                    <x-form.input name="order_amount" type="number" label="Giá trị đơn (không bắt buộc)" inputmode="numeric" min="1000" step="1000" placeholder="Ví dụ 250000" />
+                </div>
+
+                <div>
+                    <label for="tracking_link_id" class="label">Link hoàn tiền đã dùng (không bắt buộc)</label>
+                    <select id="tracking_link_id" name="tracking_link_id" class="input">
+                        <option value="">Không nhớ / không có trong danh sách</option>
+                        @foreach ($recentLinks as $link)
+                            <option value="{{ $link->id }}" @selected((string) old('tracking_link_id') === (string) $link->id)>{{ $link->created_at->format('d/m H:i') }} · {{ $link->platform?->name }} · {{ \Illuminate\Support\Str::limit($link->product_name ?? $link->original_url, 50) }}</option>
+                        @endforeach
+                    </select>
+                    @error('tracking_link_id') <p class="field-error">{{ $message }}</p> @enderror
+                </div>
+
+                <div>
+                    <label for="message" class="label">Ghi chú thêm (không bắt buộc)</label>
+                    <textarea id="message" name="message" rows="3" class="input" placeholder="Ví dụ: mua 2 sản phẩm, dùng mã giảm giá của sàn...">{{ old('message') }}</textarea>
+                    @error('message') <p class="field-error">{{ $message }}</p> @enderror
+                </div>
+
+                <div>
+                    <label for="attachments" class="label">Ảnh chụp đơn hàng (bắt buộc, tối đa 3 ảnh)</label>
+                    <input id="attachments" type="file" name="attachments[]" accept="image/*" multiple required class="block w-full text-sm text-stone-600 file:mr-3 file:rounded-lg file:border-0 file:bg-stone-100 file:px-3 file:py-2 file:font-medium">
+                    <p class="mt-1.5 text-xs text-stone-500">Chụp trang chi tiết đơn có mã đơn, sản phẩm và thời gian đặt.</p>
+                    @error('attachments') <p class="field-error">{{ $message }}</p> @enderror
+                    @error('attachments.*') <p class="field-error">{{ $message }}</p> @enderror
+                </div>
             </div>
-            <x-form.input name="platform_order_id" label="Mã đơn hàng trên sàn" :value="$prefill['platform_order_id'] ?? null" />
-        </div>
+        </template>
 
-        <x-form.input name="subject" label="Tiêu đề" required />
+        {{-- Các loại yêu cầu khác --}}
+        <template x-if="type !== 'missing_order'">
+            <div class="space-y-4">
+                <div class="grid gap-4 sm:grid-cols-2" x-show="type === 'wrong_amount'">
+                    <div>
+                        <label for="platform_id" class="label">Sàn</label>
+                        <select id="platform_id" name="platform_id" class="input">
+                            <option value="">Chọn sàn</option>
+                            @foreach ($platforms as $platform)
+                                <option value="{{ $platform->id }}" @selected((string) old('platform_id') === (string) $platform->id)>{{ $platform->name }}</option>
+                            @endforeach
+                        </select>
+                    </div>
+                    <x-form.input name="platform_order_id" label="Mã đơn hàng trên sàn" :value="$prefill['platform_order_id'] ?? null" />
+                </div>
 
-        <div>
-            <label for="message" class="label">Nội dung</label>
-            <textarea id="message" name="message" rows="5" class="input" required placeholder="Mô tả chi tiết: thời gian mua, link đã dùng, số tiền...">{{ old('message') }}</textarea>
-            @error('message') <p class="field-error">{{ $message }}</p> @enderror
-        </div>
+                <x-form.input name="subject" label="Tiêu đề" required />
 
-        <div>
-            <label for="attachments" class="label">Ảnh chụp màn hình (tối đa 3 ảnh)</label>
-            <input id="attachments" type="file" name="attachments[]" accept="image/*" multiple class="block w-full text-sm text-stone-600 file:mr-3 file:rounded-lg file:border-0 file:bg-stone-100 file:px-3 file:py-2 file:font-medium">
-            @error('attachments.*') <p class="field-error">{{ $message }}</p> @enderror
-        </div>
+                <div>
+                    <label for="message" class="label">Nội dung</label>
+                    <textarea id="message" name="message" rows="5" class="input" required placeholder="Mô tả chi tiết vấn đề của bạn...">{{ old('message') }}</textarea>
+                    @error('message') <p class="field-error">{{ $message }}</p> @enderror
+                </div>
+
+                <div>
+                    <label for="attachments" class="label">Ảnh chụp màn hình (tối đa 3 ảnh)</label>
+                    <input id="attachments" type="file" name="attachments[]" accept="image/*" multiple class="block w-full text-sm text-stone-600 file:mr-3 file:rounded-lg file:border-0 file:bg-stone-100 file:px-3 file:py-2 file:font-medium">
+                    @error('attachments.*') <p class="field-error">{{ $message }}</p> @enderror
+                </div>
+            </div>
+        </template>
 
         <button type="submit" class="btn btn-primary">Gửi yêu cầu</button>
     </form>

@@ -14,8 +14,12 @@ COPY --from=composer:2 /usr/bin/composer /usr/bin/composer
 COPY docker/php.ini $PHP_INI_DIR/conf.d/zz-app.ini
 COPY docker/Caddyfile /etc/frankenphp/Caddyfile
 
+# Log theo ngày (giữ 15 ngày) và ra stderr để vẫn xem được ở mục Logs của Render; biến môi trường trên Render ghi đè được
 ENV SERVER_NAME=:80 \
-    COMPOSER_ALLOW_SUPERUSER=1
+    COMPOSER_ALLOW_SUPERUSER=1 \
+    LOG_CHANNEL=stack \
+    LOG_STACK=daily,stderr \
+    LOG_DAILY_DAYS=15
 
 WORKDIR /app
 

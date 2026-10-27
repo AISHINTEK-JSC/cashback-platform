@@ -26,6 +26,69 @@
         </div>
     </div>
 
+    @if ($onboarding)
+        @php $total = count($onboarding['steps']); @endphp
+        <div class="card mt-6 p-5 sm:p-6">
+            <div class="flex flex-wrap items-start justify-between gap-3">
+                <div class="flex items-start gap-3">
+                    <span class="grid size-10 shrink-0 place-items-center rounded-xl bg-brand-50 text-brand-600">
+                        <x-heroicon-o-rocket-launch class="size-5" />
+                    </span>
+                    <div>
+                        <h2 class="font-semibold text-stone-900">Bắt đầu nhận hoàn tiền</h2>
+                        <p class="text-sm text-stone-500">
+                            @if ($onboarding['bonus'] > 0)
+                                Hoàn thành {{ $total }} bước để nhận <span class="font-semibold text-emerald-700">{{ vnd($onboarding['bonus']) }}</span> vào số dư có thể rút.
+                            @else
+                                Vài bước để bắt đầu nhận hoàn tiền dễ dàng hơn.
+                            @endif
+                        </p>
+                    </div>
+                </div>
+                <span class="text-sm font-semibold text-stone-700 tabular-nums">{{ $onboarding['completed'] }}/{{ $total }}</span>
+            </div>
+
+            <div class="mt-4 h-2 overflow-hidden rounded-full bg-stone-100" role="progressbar" aria-valuemin="0" aria-valuemax="{{ $total }}" aria-valuenow="{{ $onboarding['completed'] }}" aria-label="Tiến độ hướng dẫn">
+                <div class="h-full rounded-full bg-brand-500 transition-all" style="width: {{ round($onboarding['completed'] / $total * 100) }}%"></div>
+            </div>
+
+            <ol class="mt-4 divide-y divide-stone-100">
+                @foreach ($onboarding['steps'] as $step)
+                    <li class="flex items-center gap-3 py-3">
+                        @if ($step['done'])
+                            <x-heroicon-s-check-circle class="size-6 shrink-0 text-emerald-600" />
+                        @else
+                            <span class="grid size-6 shrink-0 place-items-center rounded-full border-2 border-stone-300 text-xs font-semibold text-stone-500">{{ $loop->iteration }}</span>
+                        @endif
+                        <div class="min-w-0 flex-1">
+                            <p @class(['text-sm font-medium', 'text-stone-500 line-through' => $step['done'], 'text-stone-900' => ! $step['done']])>{{ $step['label'] }}</p>
+                            @unless ($step['done'])
+                                <p class="text-xs text-stone-500">{{ $step['hint'] }}</p>
+                            @endunless
+                        </div>
+                        @unless ($step['done'])
+                            <a href="{{ $step['url'] }}" class="btn btn-secondary shrink-0 !px-3 !py-1.5 text-xs">{{ $step['action'] }}</a>
+                        @endunless
+                    </li>
+                @endforeach
+            </ol>
+
+            @if ($onboarding['allDone'] && $onboarding['bonus'] > 0)
+                <form method="POST" action="{{ route('dashboard.onboarding.claim') }}" class="mt-2">
+                    @csrf
+                    <button type="submit" class="btn btn-primary w-full sm:w-auto"><x-heroicon-o-gift class="size-5" /> Nhận thưởng {{ vnd($onboarding['bonus']) }}</button>
+                </form>
+            @endif
+
+            @if ($onboarding['firstOrderBonus'] > 0)
+                <p class="mt-3 flex items-start gap-2 rounded-xl bg-emerald-50 p-3 text-sm text-emerald-800">
+                    <x-heroicon-o-gift class="size-5 shrink-0" />
+                    <span>Thêm quà: đơn đầu tiên {{ $onboarding['firstOrderMin'] > 0 ? 'từ '.vnd($onboarding['firstOrderMin']).' ' : '' }}mua qua link hoàn tiền được duyệt, bạn nhận thêm <span class="font-semibold">{{ vnd($onboarding['firstOrderBonus']) }}</span>.</span>
+                </p>
+            @endif
+        </div>
+    @endif
+
     @if ($showTelegramPrompt)
         <div class="card mt-6 flex flex-col gap-4 !border-brand-200 p-5 sm:flex-row sm:items-center sm:p-6">
             <span class="grid size-11 shrink-0 place-items-center rounded-xl bg-brand-50 text-brand-600">

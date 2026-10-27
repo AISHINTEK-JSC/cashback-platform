@@ -225,6 +225,14 @@ class User extends Authenticatable implements FilamentUser, MustVerifyEmail
     }
 
     /**
+     * @return HasMany<UserBonus, $this>
+     */
+    public function bonuses(): HasMany
+    {
+        return $this->hasMany(UserBonus::class);
+    }
+
+    /**
      * @return HasMany<FraudFlag, $this>
      */
     public function fraudFlags(): HasMany

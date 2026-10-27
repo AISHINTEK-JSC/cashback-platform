@@ -4,10 +4,12 @@ namespace App\Filament\Resources\SupportTickets;
 
 use App\Enums\TicketStatus;
 use App\Enums\TicketType;
+use App\Filament\Resources\Orders\OrderResource;
 use App\Filament\Resources\SupportTickets\Pages\ListSupportTickets;
 use App\Filament\Resources\SupportTickets\Pages\ViewSupportTicket;
 use App\Filament\Support\NavigationGroup;
 use App\Models\SupportTicket;
+use App\Models\TrackingLink;
 use BackedEnum;
 use Filament\Actions\ViewAction;
 use Filament\Infolists\Components\ImageEntry;
@@ -20,6 +22,8 @@ use Filament\Support\Icons\Heroicon;
 use Filament\Tables\Columns\TextColumn;
 use Filament\Tables\Filters\SelectFilter;
 use Filament\Tables\Table;
+use Illuminate\Support\Collection;
+use Illuminate\Support\Str;
 use UnitEnum;
 
 class SupportTicketResource extends Resource
@@ -64,6 +68,43 @@ class SupportTicketResource extends Resource
                     TextEntry::make('platform_order_id')->label('Mã đơn khai báo')->placeholder('-')->copyable(),
                     TextEntry::make('created_at')->label('Tạo lúc')->dateTime('d/m/Y H:i'),
                 ]),
+            Section::make('Khiếu nại thiếu đơn')
+                ->description('Hệ thống tự đối chiếu lúc thành viên gửi khiếu nại.')
+                ->visible(fn (SupportTicket $record) => $record->type === TicketType::MissingOrder && filled($record->details))
+                ->columns(4)
+                ->schema([
+                    TextEntry::make('details.purchased_at')->label('Ngày đặt hàng')->date('d/m/Y'),
+                    TextEntry::make('details.order_amount')->label('Giá trị khai báo')->formatStateUsing(fn ($state) => vnd((int) $state))->placeholder('-'),
+                    TextEntry::make('claim_check')
+                        ->label('Kết quả đối chiếu')
+                        ->badge()
+                        ->state(fn (SupportTicket $record) => match ($record->details['check']['result'] ?? null) {
+                            'unmatched' => 'Có đơn, chưa gán thành viên',
+                            'other_user' => 'Đơn thuộc thành viên khác',
+                            default => 'Không tìm thấy đơn',
+                        })
+                        ->color(fn (SupportTicket $record) => match ($record->details['check']['result'] ?? null) {
+                            'unmatched' => 'warning',
+                            'other_user' => 'danger',
+                            default => 'gray',
+                        })
+                        ->url(fn (SupportTicket $record) => filled($record->details['check']['order_id'] ?? null) ? OrderResource::getUrl('view', ['record' => $record->details['check']['order_id']]) : null),
+                    TextEntry::make('claim_selected_link')
+                        ->label('Link thành viên chọn')
+                        ->state(fn (SupportTicket $record) => ($link = static::claimLinks($record, [$record->details['tracking_link_id'] ?? null])->first())
+                            ? $link->sub_id.' · '.$link->created_at->format('d/m H:i').' · '.$link->click_count.' lượt mở'
+                            : null)
+                        ->copyable()
+                        ->placeholder('Không chọn'),
+                    TextEntry::make('claim_related_links')
+                        ->label('Link trên sàn này trong 7 ngày trước ngày mua (đối chiếu sub_id với báo cáo của sàn)')
+                        ->state(fn (SupportTicket $record) => static::claimLinks($record, $record->details['check']['related_link_ids'] ?? [])
+                            ->map(fn (TrackingLink $link) => $link->sub_id.' · '.$link->created_at->format('d/m H:i').' · '.$link->click_count.' lượt mở · '.Str::limit($link->product_name ?? $link->original_url, 40))
+                            ->all())
+                        ->listWithLineBreaks()
+                        ->placeholder('Không có link nào, có thể thành viên không mua qua link hoàn tiền')
+                        ->columnSpanFull(),
+                ]),
             Section::make('Hội thoại')
                 ->schema([
                     RepeatableEntry::make('messages')
@@ -97,6 +138,19 @@ class SupportTicketResource extends Resource
                 SelectFilter::make('type')->label('Loại')->options(TicketType::class),
             ])
             ->recordActions([ViewAction::make()]);
+    }
+
+    /**
+     * Link hoàn tiền nêu trong khiếu nại, chỉ lấy link của chính thành viên gửi ticket.
+     *
+     * @param  array<int, int|null>  $ids
+     * @return Collection<int, TrackingLink>
+     */
+    private static function claimLinks(SupportTicket $ticket, array $ids): Collection
+    {
+        $ids = array_values(array_filter($ids));
+
+        return $ids === [] ? collect() : TrackingLink::query()->where('user_id', $ticket->user_id)->whereIn('id', $ids)->latest()->get();
     }
 
     public static function getPages(): array

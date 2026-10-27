@@ -117,21 +117,19 @@ it('shows only the member own orders', function () {
     $this->actingAs($user)->get(route('dashboard.orders.show', $other))->assertNotFound();
 });
 
-it('opens a missing order ticket', function () {
+it('opens a general support ticket', function () {
     $user = User::factory()->create();
 
     $this->actingAs($user)->post(route('dashboard.tickets.store'), [
-        'type' => 'missing_order',
-        'platform_id' => $this->platform->id,
-        'platform_order_id' => '240930ABC',
-        'subject' => 'Thiếu đơn ngày 30/9',
-        'message' => 'Tôi đã mua qua link nhưng chưa thấy đơn.',
+        'type' => 'withdraw',
+        'subject' => 'Hỏi về rút tiền',
+        'message' => 'Bao lâu thì tiền về tài khoản?',
     ])->assertRedirect();
 
     $ticket = SupportTicket::sole();
     expect($ticket->messages)->toHaveCount(1);
 
-    $this->actingAs($user)->get(route('dashboard.tickets.show', $ticket))->assertSuccessful()->assertSee('Thiếu đơn ngày 30/9');
+    $this->actingAs($user)->get(route('dashboard.tickets.show', $ticket))->assertSuccessful()->assertSee('Hỏi về rút tiền');
 });
 
 it('stores member uploads on the uploads disk', function () {
@@ -148,7 +146,7 @@ it('stores member uploads on the uploads disk', function () {
         'type' => 'missing_order',
         'platform_id' => $this->platform->id,
         'platform_order_id' => '240930ABC',
-        'subject' => 'Thiếu đơn',
+        'purchased_at' => now()->subDays(2)->toDateString(),
         'message' => 'Kèm ảnh chụp đơn.',
         'attachments' => [UploadedFile::fake()->image('don-hang.jpg')],
     ])->assertSessionHasNoErrors();

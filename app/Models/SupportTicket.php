@@ -9,7 +9,7 @@ use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 
-#[Fillable(['user_id', 'type', 'platform_id', 'platform_order_id', 'subject', 'status', 'assigned_to'])]
+#[Fillable(['user_id', 'type', 'platform_id', 'platform_order_id', 'subject', 'status', 'assigned_to', 'details'])]
 class SupportTicket extends Model
 {
     /**
@@ -20,6 +20,7 @@ class SupportTicket extends Model
         return [
             'type' => TicketType::class,
             'status' => TicketStatus::class,
+            'details' => 'array',
         ];
     }
 

@@ -94,6 +94,7 @@ it('rejects a withdrawal and refunds the member', function () {
 });
 
 it('approves an order from the order page', function () {
+    app(Settings::class)->set('first_order_bonus', 0);
     $buyer = User::factory()->create();
     $order = Order::factory()->for($this->platform)->for($buyer)->create();
     app(OrderRewardService::class)->createRewards($order);

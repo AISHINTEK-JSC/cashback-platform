@@ -9,8 +9,15 @@
         <x-stat-card label="Đang rút" icon="arrow-path" :value="vnd($wallet->frozen_balance)" />
     </div>
 
+    <x-earnings-chart :earnings="$earnings" class="mt-6" />
+
     <div class="mt-8 mb-3 flex flex-wrap items-center justify-between gap-3">
-        <h2 class="font-semibold text-stone-900">Lịch sử giao dịch</h2>
+        <div class="flex items-center gap-3">
+            <h2 class="font-semibold text-stone-900">Lịch sử giao dịch</h2>
+            <a href="{{ route('dashboard.wallet.export', array_filter(['vi' => $filters['vi'] ?? null])) }}" class="btn btn-ghost !px-2.5 !py-1.5 text-xs" title="Tải lịch sử giao dịch (mở được bằng Excel)">
+                <x-heroicon-o-arrow-down-tray class="size-4" /> Xuất CSV
+            </a>
+        </div>
         <nav class="tabs" aria-label="Lọc theo số dư">
             <a href="{{ route('dashboard.wallet.index') }}" @class(['tab', 'tab-active' => empty($filters['vi'])])>Tất cả</a>
             @foreach (\App\Enums\WalletBucket::cases() as $bucket)

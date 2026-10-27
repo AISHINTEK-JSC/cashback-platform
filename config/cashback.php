@@ -38,6 +38,11 @@ return [
         // Điểm danh: thưởng theo ngày thứ n trong chuỗi, lặp lại sau khi hết mảng
         'checkin_rewards' => '100,100,200,200,300,300,500',
 
+        // Thưởng thành viên mới (VND, 0 = tắt): đơn đầu tiên được duyệt có giá trị từ mức tối thiểu, hoàn thành danh sách hướng dẫn
+        'first_order_bonus' => 10000,
+        'first_order_bonus_min_order' => 50000,
+        'onboarding_bonus' => 5000,
+
         // Bot Telegram: số tin tối đa mỗi chat được xử lý trong 1 phút (0 = không giới hạn), gợi ý liên kết ở trang tổng quan
         'telegram_chat_rate_limit' => 20,
         'telegram_dashboard_prompt' => true,

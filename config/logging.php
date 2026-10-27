@@ -54,7 +54,8 @@ return [
 
         'stack' => [
             'driver' => 'stack',
-            'channels' => explode(',', (string) env('LOG_STACK', 'single')),
+            // Mặc định ghi file theo ngày (storage/logs/laravel-YYYY-MM-DD.log), giữ LOG_DAILY_DAYS ngày rồi tự xoá
+            'channels' => explode(',', (string) env('LOG_STACK', 'daily')),
             'ignore_exceptions' => false,
         ],
 
@@ -69,7 +70,7 @@ return [
             'driver' => 'daily',
             'path' => storage_path('logs/laravel.log'),
             'level' => env('LOG_LEVEL', 'debug'),
-            'max_files' => env('LOG_DAILY_DAYS', 14),
+            'max_files' => (int) env('LOG_DAILY_DAYS', 15),
             'replace_placeholders' => true,
         ],
 

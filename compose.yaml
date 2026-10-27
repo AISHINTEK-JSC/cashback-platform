@@ -10,7 +10,10 @@ x-app-environment: &app-environment
   APP_LOCALE: vi
   APP_FAKER_LOCALE: vi_VN
   APP_TIMEZONE: Asia/Ho_Chi_Minh
-  LOG_CHANNEL: stderr
+  # Log ghi file theo ngày (giữ 15 ngày, trong volume storage) và đồng thời ra stderr để xem bằng docker logs
+  LOG_CHANNEL: stack
+  LOG_STACK: daily,stderr
+  LOG_DAILY_DAYS: 15
   # Supabase (Postgres) dùng chung với production, thông tin lấy từ .env
   DB_CONNECTION: pgsql
   DB_HOST: ${DB_HOST}

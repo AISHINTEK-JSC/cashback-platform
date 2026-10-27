@@ -15,6 +15,7 @@ use App\Services\Affiliate\Data\PlatformOrderItemData;
 use App\Services\Orders\OrderStatusService;
 use App\Services\Orders\OrderSyncService;
 use App\Services\WalletService;
+use App\Support\Settings;
 
 function orderData(string $subId, OrderStatus $status = OrderStatus::Pending, int $commission = 40000, string $id = 'SP001'): PlatformOrderData
 {
@@ -31,6 +32,8 @@ function orderData(string $subId, OrderStatus $status = OrderStatus::Pending, in
 }
 
 beforeEach(function () {
+    // Test luồng tiền hoàn thuần, thưởng đơn đầu tiên có test riêng (NewMemberBonusTest)
+    app(Settings::class)->set('first_order_bonus', 0);
     $this->platform = shopeeWithDefaultRule();
     $this->f2 = User::factory()->create();
     $this->f1 = User::factory()->referredBy($this->f2)->create();

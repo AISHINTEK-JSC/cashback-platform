@@ -6,6 +6,7 @@ use App\Enums\OrderStatus;
 use App\Enums\OrderStatusSource;
 use App\Models\Order;
 use App\Notifications\OrderStatusChanged;
+use App\Services\NewMemberBonusService;
 use App\Services\UserLevelService;
 use Illuminate\Support\Facades\DB;
 
@@ -17,6 +18,7 @@ class OrderStatusService
     public function __construct(
         private readonly OrderRewardService $rewards,
         private readonly UserLevelService $levels,
+        private readonly NewMemberBonusService $bonuses,
     ) {}
 
     public function transition(Order $order, OrderStatus $to, OrderStatusSource $source, ?string $note = null): bool
@@ -54,11 +56,15 @@ class OrderStatusService
                 'note' => $note,
             ]);
 
-            match ($to) {
-                OrderStatus::Approved => $this->rewards->release($order),
-                OrderStatus::Cancelled => $this->rewards->cancel($order, $note ?? 'Đơn bị huỷ'),
-                default => null,
-            };
+            if ($to === OrderStatus::Approved) {
+                $this->rewards->release($order);
+                $this->bonuses->grantFirstOrderBonus($order);
+            }
+
+            if ($to === OrderStatus::Cancelled) {
+                $this->rewards->cancel($order, $note ?? 'Đơn bị huỷ');
+                $this->bonuses->revokeFirstOrderBonus($order);
+            }
         });
 
         if ($order->user && in_array($to, [OrderStatus::Approved, OrderStatus::Cancelled], true)) {

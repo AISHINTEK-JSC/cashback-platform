@@ -103,6 +103,22 @@ class ManageSettings extends Page
                             ->regex('/^\d+(,\d+)*$/')
                             ->required(),
                     ]),
+                Section::make('Thưởng thành viên mới')
+                    ->description('Mỗi thành viên chỉ nhận mỗi loại thưởng một lần. Đặt 0 để tắt.')
+                    ->columns(3)
+                    ->schema([
+                        TextInput::make('first_order_bonus')
+                            ->label('Thưởng đơn đầu tiên')
+                            ->helperText('Cộng vào số dư khả dụng khi đơn đầu tiên được duyệt, thu hồi nếu đơn đó bị huỷ sau này.')
+                            ->integer()->minValue(0)->suffix('đ')->required(),
+                        TextInput::make('first_order_bonus_min_order')
+                            ->label('Giá trị đơn tối thiểu để nhận')
+                            ->integer()->minValue(0)->suffix('đ')->required(),
+                        TextInput::make('onboarding_bonus')
+                            ->label('Thưởng hoàn thành hướng dẫn')
+                            ->helperText('Hoàn thành danh sách việc cần làm ở trang tổng quan rồi bấm Nhận thưởng.')
+                            ->integer()->minValue(0)->suffix('đ')->required(),
+                    ]),
                 Section::make('Bot Telegram')
                     ->columns(2)
                     ->schema([
