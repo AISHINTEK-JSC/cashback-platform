@@ -36,6 +36,13 @@ class User extends Authenticatable implements FilamentUser, MustVerifyEmail
         static::created(function (User $user): void {
             $user->wallet()->create();
         });
+
+        // Tài khoản bị xoá thì gỡ Telegram: không gửi thông báo nữa và chat đó liên kết được với tài khoản khác (cột unique)
+        static::softDeleted(function (User $user): void {
+            if ($user->telegram_chat_id) {
+                $user->forceFill(['telegram_chat_id' => null, 'telegram_username' => null, 'telegram_linked_at' => null])->saveQuietly();
+            }
+        });
     }
 
     /**

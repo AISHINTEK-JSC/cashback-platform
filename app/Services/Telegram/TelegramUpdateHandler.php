@@ -116,8 +116,8 @@ class TelegramUpdateHandler
             return;
         }
 
-        // Một chat Telegram chỉ gắn với một tài khoản: gỡ khỏi tài khoản cũ nếu có
-        User::query()->where('telegram_chat_id', $chatId)->whereKeyNot($user->id)->update(['telegram_chat_id' => null, 'telegram_username' => null, 'telegram_linked_at' => null]);
+        // Một chat Telegram chỉ gắn với một tài khoản: gỡ khỏi tài khoản cũ nếu có, kể cả tài khoản đã xoá mềm (cột unique)
+        User::withTrashed()->where('telegram_chat_id', $chatId)->whereKeyNot($user->id)->update(['telegram_chat_id' => null, 'telegram_username' => null, 'telegram_linked_at' => null]);
         $user->update(['telegram_chat_id' => $chatId, 'telegram_username' => $username, 'telegram_linked_at' => now()]);
         $this->activity->log($user, 'telegram.link', ['username' => $username]);
 

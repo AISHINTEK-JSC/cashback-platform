@@ -247,3 +247,26 @@ it('mentions telegram data in the privacy policy', function () {
         ->assertSee('Khi liên kết Telegram (không bắt buộc)')
         ->assertSee('/huylienket');
 });
+
+it('clears the telegram link when an account is deleted', function () {
+    $this->user->update(['telegram_chat_id' => 555, 'telegram_username' => 'nguyenvana', 'telegram_linked_at' => now()]);
+
+    $this->user->delete();
+
+    expect(User::withTrashed()->find($this->user->id))
+        ->telegram_chat_id->toBeNull()
+        ->telegram_username->toBeNull()
+        ->telegram_linked_at->toBeNull();
+});
+
+it('links a chat that still sits on a deleted account', function () {
+    $deleted = User::factory()->create();
+    $deleted->delete();
+    // Dữ liệu cũ trước khi có dọn dẹp lúc xoá: tài khoản đã xoá vẫn giữ chat ID
+    User::withTrashed()->whereKey($deleted->id)->update(['telegram_chat_id' => 555]);
+
+    sendToWebhook(telegramUpdate('/start '.TelegramUpdateHandler::issueLinkToken($this->user)))->assertNoContent();
+
+    expect($this->user->fresh()->telegram_chat_id)->toBe(555)
+        ->and(User::withTrashed()->find($deleted->id)->telegram_chat_id)->toBeNull();
+});
