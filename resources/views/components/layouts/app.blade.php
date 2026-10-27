@@ -160,15 +160,22 @@
             <div class="sm:col-span-2">
                 <x-logo :name="$siteName" />
                 <p class="mt-2 max-w-md text-sm text-stone-600">Nền tảng hoàn tiền khi mua sắm trên sàn thương mại điện tử và website thương hiệu. Chúng tôi nhận hoa hồng tiếp thị liên kết từ sàn và chia lại phần lớn cho bạn.</p>
-                <div class="mt-4 flex flex-wrap gap-3 text-sm text-stone-600">
+                {{-- Cùng kiểu nút sáng/tối trên header: btn-ghost, icon nét 1.5 một màu --}}
+                <div class="mt-3 -ml-2.5 flex flex-wrap items-center gap-1">
                     @if ($hotline = setting('support_hotline'))
-                        <span>Hotline: <a href="tel:{{ $hotline }}" class="font-medium text-stone-900">{{ $hotline }}</a></span>
+                        <a href="tel:{{ $hotline }}" class="btn btn-ghost !px-2.5" aria-label="Gọi hotline {{ $hotline }}" title="Hotline: {{ $hotline }}">
+                            <x-heroicon-o-phone class="size-5" />
+                        </a>
                     @endif
                     @if ($zalo = setting('support_zalo'))
-                        <a href="{{ $zalo }}" class="font-medium text-stone-900" target="_blank" rel="noopener">Zalo hỗ trợ</a>
+                        <a href="{{ $zalo }}" class="btn btn-ghost !px-2.5" target="_blank" rel="noopener" aria-label="Chat Zalo hỗ trợ" title="Zalo hỗ trợ">
+                            <svg class="size-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linejoin="round" aria-hidden="true"><path d="M7 4h10a4 4 0 0 1 4 4v6a4 4 0 0 1-4 4h-6l-4 3v-3a4 4 0 0 1-4-4V8a4 4 0 0 1 4-4Z"/><path d="M9 8.5h6l-6 5h6" stroke-linecap="round"/></svg>
+                        </a>
                     @endif
                     @if ($facebook = setting('support_facebook'))
-                        <a href="{{ $facebook }}" class="font-medium text-stone-900" target="_blank" rel="noopener">Fanpage</a>
+                        <a href="{{ $facebook }}" class="btn btn-ghost !px-2.5" target="_blank" rel="noopener" aria-label="Fanpage Facebook" title="Fanpage Facebook">
+                            <svg class="size-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M17 3h-2.5A4.5 4.5 0 0 0 10 7.5V10H7v3.5h3V21h3.5v-7.5h3l.5-3.5h-3.5V7.75c0-.69.56-1.25 1.25-1.25H17Z"/></svg>
+                        </a>
                     @endif
                 </div>
                 <button type="button" x-data="pwaInstall" x-show="canInstall" x-cloak @click="install()" class="btn btn-secondary mt-4">

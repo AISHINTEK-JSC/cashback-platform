@@ -52,6 +52,10 @@
         {{-- Nội dung do admin soạn trong trình soạn thảo của trang quản trị --}}
         <div class="prose-content mt-8">{!! $post->content !!}</div>
 
+        @unless ($isPreview)
+            <x-share-buttons :url="route('posts.show', $post)" :title="$post->title" class="mt-8 border-t border-stone-200 pt-6" />
+        @endunless
+
         <div class="card mt-10 p-6 text-center">
             <p class="font-semibold text-stone-900">Nhận hoàn tiền cho đơn hàng tiếp theo</p>
             <div class="mx-auto mt-4 max-w-xl">

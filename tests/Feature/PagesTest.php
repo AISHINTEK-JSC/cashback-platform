@@ -7,6 +7,7 @@ use App\Models\Post;
 use App\Models\SupportTicket;
 use App\Models\User;
 use App\Models\Voucher;
+use App\Support\Settings;
 use Illuminate\Http\UploadedFile;
 use Illuminate\Support\Facades\Route;
 use Illuminate\Support\Facades\Storage;
@@ -177,4 +178,35 @@ it('shows the maintenance page with the expected downtime', function () {
         ->assertServiceUnavailable()
         ->assertSee('Hệ thống đang')
         ->assertSee('Dự kiến hoạt động lại sau khoảng 10 phút');
+});
+
+it('shows support contacts as icon links in the footer', function () {
+    $settings = app(Settings::class);
+    $settings->set('support_hotline', '0900000000');
+    $settings->set('support_zalo', 'https://zalo.me/0900000000');
+    $settings->set('support_facebook', 'https://www.facebook.com/vihoantien');
+
+    $this->get(route('pages.faq'))
+        ->assertOk()
+        ->assertSee('href="tel:0900000000"', false)
+        ->assertSee('aria-label="Chat Zalo hỗ trợ"', false)
+        ->assertSee('aria-label="Fanpage Facebook"', false);
+});
+
+it('shows share links on published posts but not on previews', function () {
+    $post = Post::factory()->create();
+    $encodedUrl = rawurlencode(route('posts.show', $post));
+
+    $this->get(route('posts.show', $post))
+        ->assertSuccessful()
+        ->assertSee("https://www.facebook.com/sharer/sharer.php?u={$encodedUrl}", false)
+        ->assertSee("https://x.com/intent/post?url={$encodedUrl}", false)
+        ->assertSee("https://t.me/share/url?url={$encodedUrl}", false)
+        ->assertSee('Sao chép link');
+
+    $draft = Post::factory()->create(['status' => 'draft']);
+    $this->actingAs(User::factory()->admin()->create())
+        ->get(route('posts.show', $draft))
+        ->assertSuccessful()
+        ->assertDontSee('Chia sẻ lên Facebook');
 });
