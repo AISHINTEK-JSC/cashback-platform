@@ -19,7 +19,10 @@ use Throwable;
 
 class SocialLoginController extends Controller
 {
-    public const PROVIDERS = ['google', 'facebook'];
+    /**
+     * Facebook tạm tắt, thêm 'facebook' vào đây để bật lại.
+     */
+    public const PROVIDERS = ['google'];
 
     public function redirect(string $provider, Settings $settings): SymfonyRedirectResponse
     {
@@ -55,7 +58,6 @@ class SocialLoginController extends Controller
             $user ??= $register->handle([
                 'name' => $socialUser->getName() ?: $socialUser->getEmail(),
                 'email' => $socialUser->getEmail(),
-                'avatar' => $socialUser->getAvatar(),
                 'email_verified_at' => now(),
             ], $request->cookie(ReferralService::COOKIE));
 

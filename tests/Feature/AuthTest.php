@@ -3,6 +3,8 @@
 use App\Enums\UserStatus;
 use App\Models\ActivityLog;
 use App\Models\User;
+use Laravel\Socialite\Facades\Socialite;
+use Laravel\Socialite\Two\User as SocialiteUser;
 
 beforeEach(fn () => $this->withoutVite());
 
@@ -75,4 +77,29 @@ it('logs out a member who gets locked mid-session', function () {
 it('only lets staff into the admin panel', function () {
     $this->actingAs(User::factory()->create())->get('/admin')->assertForbidden();
     $this->actingAs(User::factory()->admin()->create())->get('/admin')->assertSuccessful();
+});
+
+it('hides facebook login while it is disabled', function () {
+    $this->get(route('login'))
+        ->assertOk()
+        ->assertSee(route('social.redirect', 'google'))
+        ->assertDontSee('/auth/facebook/redirect');
+
+    $this->get('/auth/facebook/redirect')->assertNotFound();
+});
+
+it('registers a google user without importing their google avatar', function () {
+    Socialite::fake('google', (new SocialiteUser)->map([
+        'id' => 'google-123',
+        'name' => 'Nguyễn Văn A',
+        'email' => 'a@gmail.com',
+        'avatar' => 'https://lh3.googleusercontent.com/a/photo.jpg',
+    ]));
+
+    $this->get(route('social.callback', 'google'))->assertRedirect(route('dashboard.index'));
+
+    $user = User::where('email', 'a@gmail.com')->sole();
+    expect($user->avatar)->toBeNull()
+        ->and($user->socialAccounts()->where('provider', 'google')->where('provider_id', 'google-123')->exists())->toBeTrue();
+    $this->assertAuthenticatedAs($user);
 });
