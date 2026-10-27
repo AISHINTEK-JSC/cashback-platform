@@ -25,6 +25,7 @@ class Settings
         'google_client_secret' => 'services.google.client_secret',
         'facebook_client_id' => 'services.facebook.client_id',
         'facebook_client_secret' => 'services.facebook.client_secret',
+        'telegram_bot_token' => 'services.telegram.bot_token',
     ];
 
     public function get(string $key, mixed $default = null): mixed

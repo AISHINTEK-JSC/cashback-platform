@@ -11,6 +11,7 @@ use App\Http\Controllers\PostController;
 use App\Http\Controllers\RateController;
 use App\Http\Controllers\ReferralLandingController;
 use App\Http\Controllers\SeoController;
+use App\Http\Controllers\TelegramWebhookController;
 use App\Http\Controllers\TrackingRedirectController;
 use App\Http\Controllers\VoucherController;
 use Illuminate\Support\Facades\Route;
@@ -39,6 +40,9 @@ Route::get('/robots.txt', [SeoController::class, 'robots'])->withoutMiddleware('
 
 Route::get('/r/{code}', ReferralLandingController::class)->name('referral.landing');
 Route::get('/go/{subId}', TrackingRedirectController::class)->name('links.redirect');
+
+// Telegram gọi trực tiếp, xác thực bằng header secret thay cho session/CSRF; không throttle theo IP vì mọi tin đều đến từ IP của Telegram
+Route::post('/telegram/webhook', TelegramWebhookController::class)->withoutMiddleware('web')->name('telegram.webhook');
 
 /*
 |--------------------------------------------------------------------------
@@ -114,4 +118,6 @@ Route::middleware(['auth', 'active', 'verified'])->prefix('tai-khoan')->name('da
     Route::get('/ho-so', [Dashboard\ProfileController::class, 'edit'])->name('profile.edit');
     Route::put('/ho-so', [Dashboard\ProfileController::class, 'update'])->name('profile.update');
     Route::put('/ho-so/mat-khau', [Dashboard\ProfileController::class, 'updatePassword'])->name('profile.password');
+    Route::post('/ho-so/telegram', [Dashboard\TelegramLinkController::class, 'store'])->middleware('throttle:10,1')->name('telegram.link');
+    Route::delete('/ho-so/telegram', [Dashboard\TelegramLinkController::class, 'destroy'])->name('telegram.unlink');
 });

@@ -1,0 +1,171 @@
+<?php
+
+use App\Enums\WalletBucket;
+use App\Enums\WalletTransactionType;
+use App\Models\User;
+use App\Notifications\Channels\TelegramChannel;
+use App\Notifications\TicketReplied;
+use App\Services\Telegram\TelegramBot;
+use App\Services\Telegram\TelegramUpdateHandler;
+use App\Services\WalletService;
+use GuzzleHttp\Psr7\Response as Psr7Response;
+use Illuminate\Http\Client\Request;
+use Illuminate\Http\Client\RequestException;
+use Illuminate\Http\Client\Response;
+use Illuminate\Support\Facades\Http;
+use Illuminate\Testing\TestResponse;
+
+beforeEach(function () {
+    $this->withoutVite();
+    config(['services.telegram.bot_token' => 'test-token', 'services.telegram.bot_username' => 'vihoantien_bot']);
+    Http::fake(['api.telegram.org/*' => Http::response(['ok' => true, 'result' => true])]);
+
+    $this->platform = shopeeWithDefaultRule();
+    $this->user = User::factory()->create(['name' => 'Nguyễn Văn A']);
+});
+
+function telegramUpdate(string $text, int $chatId = 555, string $chatType = 'private'): array
+{
+    return ['update_id' => 1, 'message' => [
+        'message_id' => 1,
+        'from' => ['id' => $chatId, 'username' => 'nguyenvana'],
+        'chat' => ['id' => $chatId, 'type' => $chatType],
+        'text' => $text,
+    ]];
+}
+
+function sendToWebhook(array $update): TestResponse
+{
+    return test()->postJson(route('telegram.webhook'), $update, ['X-Telegram-Bot-Api-Secret-Token' => app(TelegramBot::class)->webhookSecret()]);
+}
+
+function lastTelegramText(): string
+{
+    return (string) collect(Http::recorded())->last()[0]['text'];
+}
+
+it('rejects webhook calls without the secret header', function () {
+    $this->postJson(route('telegram.webhook'), telegramUpdate('/start'))->assertForbidden();
+    $this->postJson(route('telegram.webhook'), telegramUpdate('/start'), ['X-Telegram-Bot-Api-Secret-Token' => 'sai'])->assertForbidden();
+
+    Http::assertNothingSent();
+});
+
+it('links the account from the one-time token on the profile page', function () {
+    $response = $this->actingAs($this->user)->post(route('dashboard.telegram.link'));
+    $token = str($response->headers->get('Location'))->after('https://t.me/vihoantien_bot?start=')->toString();
+    expect($token)->toHaveLength(40);
+
+    sendToWebhook(telegramUpdate('/start '.$token))->assertNoContent();
+
+    expect($this->user->fresh())
+        ->telegram_chat_id->toBe(555)
+        ->telegram_username->toBe('nguyenvana');
+    expect(lastTelegramText())->toContain('Đã liên kết với tài khoản <b>Nguyễn Văn A</b>');
+
+    sendToWebhook(telegramUpdate('/start '.$token, chatId: 999));
+    expect(lastTelegramText())->toContain('Mã liên kết không hợp lệ hoặc đã hết hạn');
+});
+
+it('moves the telegram chat to the newly linked account', function () {
+    $other = User::factory()->create(['telegram_chat_id' => 555]);
+
+    sendToWebhook(telegramUpdate('/start '.TelegramUpdateHandler::issueLinkToken($this->user)));
+
+    expect($other->fresh()->telegram_chat_id)->toBeNull()
+        ->and($this->user->fresh()->telegram_chat_id)->toBe(555);
+});
+
+it('creates a cashback link when a linked member sends a product link', function () {
+    $this->user->update(['telegram_chat_id' => 555]);
+
+    sendToWebhook(telegramUpdate('Xem sản phẩm này nhé https://shopee.vn/ao-thun-i.123.456'));
+
+    $link = $this->user->trackingLinks()->sole();
+    Http::assertSent(fn (Request $request) => str_contains($request->url(), '/sendMessage')
+        && str_contains($request['text'], $link->redirectUrl())
+        && $request['reply_markup']['inline_keyboard'][0][0]['url'] === $link->redirectUrl());
+});
+
+it('asks unlinked chats to link before creating links', function () {
+    sendToWebhook(telegramUpdate('https://shopee.vn/ao-thun-i.123.456'));
+
+    expect(lastTelegramText())->toContain('liên kết tài khoản')
+        ->and($this->user->trackingLinks()->count())->toBe(0);
+});
+
+it('requires a verified email to create links from the bot', function () {
+    $unverified = User::factory()->unverified()->create(['telegram_chat_id' => 777]);
+
+    sendToWebhook(telegramUpdate('/taolink https://shopee.vn/ao-thun-i.123.456', chatId: 777));
+
+    expect(lastTelegramText())->toContain('xác thực email')
+        ->and($unverified->trackingLinks()->count())->toBe(0);
+});
+
+it('shows the wallet balance', function () {
+    $this->user->update(['telegram_chat_id' => 555]);
+    app(WalletService::class)->post($this->user, WalletTransactionType::Bonus, WalletBucket::Available, 125000, description: 'Thưởng');
+
+    sendToWebhook(telegramUpdate('/sodu'));
+
+    expect(lastTelegramText())->toContain('Có thể rút: <b>'.vnd(125000).'</b>');
+});
+
+it('handles commands addressed to the bot by username', function () {
+    $this->user->update(['telegram_chat_id' => 555]);
+
+    sendToWebhook(telegramUpdate('/gioithieu@vihoantien_bot'));
+
+    expect(lastTelegramText())->toContain(route('referral.landing', $this->user->referral_code));
+});
+
+it('unlinks from the bot and from the profile page', function () {
+    $this->user->update(['telegram_chat_id' => 555]);
+    sendToWebhook(telegramUpdate('/huylienket'));
+    expect($this->user->fresh()->telegram_chat_id)->toBeNull();
+
+    $this->user->update(['telegram_chat_id' => 555]);
+    $this->actingAs($this->user)->delete(route('dashboard.telegram.unlink'))->assertSessionHas('success');
+    expect($this->user->fresh()->telegram_chat_id)->toBeNull();
+});
+
+it('ignores group chats', function () {
+    $this->user->update(['telegram_chat_id' => -100123]);
+
+    sendToWebhook(telegramUpdate('/sodu', chatId: -100123, chatType: 'supergroup'))->assertNoContent();
+
+    Http::assertNothingSent();
+});
+
+it('sends notifications to linked members and unlinks when the bot is blocked', function () {
+    $ticket = $this->user->supportTickets()->create(['type' => 'other', 'subject' => 'Thiếu đơn', 'status' => 'open']);
+
+    expect((new TicketReplied($ticket))->via($this->user))->toBe(['database']);
+
+    $this->user->update(['telegram_chat_id' => 555]);
+    expect((new TicketReplied($ticket))->via($this->user))->toBe(['database', TelegramChannel::class]);
+
+    $this->user->notify(new TicketReplied($ticket));
+    Http::assertSent(fn (Request $request) => str_contains($request->url(), '/sendMessage') && $request['chat_id'] === 555);
+
+    $blockedBot = Mockery::mock(TelegramBot::class);
+    $blockedBot->shouldReceive('isConfigured')->andReturnTrue();
+    $blockedBot->shouldReceive('sendMessage')->andThrow(new RequestException(new Response(new Psr7Response(403, [], '{"ok":false,"description":"Forbidden: bot was blocked by the user"}'))));
+    (new TelegramChannel($blockedBot))->send($this->user, new TicketReplied($ticket));
+
+    expect($this->user->fresh()->telegram_chat_id)->toBeNull();
+});
+
+it('shows the telegram card on the profile page', function () {
+    $this->actingAs($this->user)->get(route('dashboard.profile.edit'))->assertSee('Liên kết Telegram');
+
+    $this->user->update(['telegram_chat_id' => 555, 'telegram_username' => 'nguyenvana', 'telegram_linked_at' => now()]);
+    $this->actingAs($this->user)->get(route('dashboard.profile.edit'))->assertSee('@nguyenvana')->assertSee('Huỷ liên kết');
+});
+
+it('refuses to register a webhook that is not public https', function () {
+    $this->artisan('telegram:setup')->assertFailed();
+
+    Http::assertNothingSent();
+});

@@ -4,6 +4,7 @@ namespace App\Notifications;
 
 use App\Enums\OrderStatus;
 use App\Models\Order;
+use App\Notifications\Channels\TelegramChannel;
 use Illuminate\Bus\Queueable;
 use Illuminate\Contracts\Queue\ShouldQueue;
 use Illuminate\Notifications\Notification;
@@ -19,7 +20,7 @@ class OrderStatusChanged extends Notification implements ShouldQueue
      */
     public function via(object $notifiable): array
     {
-        return ['database'];
+        return ['database', ...TelegramChannel::for($notifiable)];
     }
 
     /**

@@ -220,7 +220,7 @@ it('renders the terms and privacy pages with live settings', function () {
         ->assertSee('Điều khoản sử dụng')
         ->assertSee(vnd(50000))
         ->assertSee('sau <strong>24 giờ</strong>', false)
-        ->assertSee('do một cá nhân sở hữu và vận hành, địa chỉ Tây Mỗ, Hà Nội')
+        ->assertSee('do Lê Văn Thành sở hữu và vận hành, địa chỉ Tây Mỗ, Hà Nội')
         ->assertDontSee('Bản mẫu');
 
     $this->get(route('pages.privacy'))

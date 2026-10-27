@@ -41,6 +41,11 @@ return [
         'redirect' => env('APP_URL').'/auth/google/callback',
     ],
 
+    'telegram' => [
+        'bot_token' => env('TELEGRAM_BOT_TOKEN'),
+        'bot_username' => env('TELEGRAM_BOT_USERNAME', 'vihoantien_bot'),
+    ],
+
     'facebook' => [
         'client_id' => env('FACEBOOK_CLIENT_ID'),
         'client_secret' => env('FACEBOOK_CLIENT_SECRET'),

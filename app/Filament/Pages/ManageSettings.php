@@ -111,6 +111,7 @@ class ManageSettings extends Page
                         $this->secretInput('google_client_secret', 'Google Client Secret'),
                         $this->secretInput('facebook_client_id', 'Facebook App ID'),
                         $this->secretInput('facebook_client_secret', 'Facebook App Secret'),
+                        $this->secretInput('telegram_bot_token', 'Telegram Bot token')->columnSpanFull(),
                     ]),
                 Section::make('Chống gian lận')
                     ->columns(2)

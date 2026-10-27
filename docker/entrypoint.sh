@@ -44,6 +44,11 @@ fi
 
 if [ "$APP_ENV" = "production" ]; then
     php artisan optimize
+
+    # Đăng ký lại webhook + danh sách lệnh của bot Telegram mỗi lần deploy (không có token thì tự bỏ qua, lỗi không chặn khởi động)
+    if [ "${CONTAINER_ROLE:-app}" = "app" ]; then
+        php artisan telegram:setup --no-interaction || true
+    fi
 fi
 
 # Host như Render cấp cổng qua $PORT; mặc định nghe cổng 80.
