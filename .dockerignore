@@ -23,3 +23,11 @@ database/*.sqlite
 Dockerfile
 compose.yaml
 .dockerignore
+# Không cần trong image chạy production
+tests
+.ai
+storage/framework/testing
+phpunit.xml
+CLAUDE.md
+AGENTS.md
+boost.json
