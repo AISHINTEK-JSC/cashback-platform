@@ -25,6 +25,8 @@
             </ul>
             <h3>Khi đăng nhập bằng Google</h3>
             <p>Chúng tôi chỉ nhận họ tên, địa chỉ email và mã định danh tài khoản Google của bạn. Chúng tôi không nhận mật khẩu Google, không truy cập danh bạ, email hay dữ liệu khác trong tài khoản Google.</p>
+            <h3>Khi liên kết Telegram (không bắt buộc)</h3>
+            <p>Nếu bạn bấm Liên kết Telegram và bắt đầu chat với bot {{ '@'.config('services.telegram.bot_username') }}, chúng tôi lưu mã chat (chat ID), tên người dùng Telegram (@username) và thời điểm liên kết, cùng nội dung bạn gửi cho bot (link sản phẩm, lệnh tra cứu) để trả lời bạn. Chúng tôi không đọc được các cuộc trò chuyện khác, danh bạ hay số điện thoại Telegram của bạn.</p>
             <h3>Thu thập tự động</h3>
             <ul>
                 <li><strong>Dữ liệu mua sắm:</strong> link sản phẩm bạn tạo, đơn hàng do sàn báo về qua chương trình tiếp thị liên kết (mã đơn, sản phẩm, giá trị, trạng thái, hoa hồng). Chúng tôi không nhận địa chỉ giao hàng hay thông tin thanh toán của bạn trên sàn.</li>
@@ -37,7 +39,7 @@
                 <li>Tạo link hoàn tiền, ghi nhận đơn hàng, tính và chi trả tiền hoàn, hoa hồng giới thiệu và các khoản thưởng.</li>
                 <li>Xác thực tài khoản, chuyển tiền rút về đúng tài khoản của bạn.</li>
                 <li>Phát hiện và ngăn chặn gian lận: nhiều tài khoản của cùng một người, dùng chung tài khoản ngân hàng, đơn ảo, truy cập trái phép.</li>
-                <li>Gửi thông báo về đơn hàng, số dư, rút tiền, bảo mật tài khoản và trả lời yêu cầu hỗ trợ.</li>
+                <li>Gửi thông báo về đơn hàng, số dư, rút tiền, bảo mật tài khoản và trả lời yêu cầu hỗ trợ, trên website và qua Telegram nếu bạn đã liên kết.</li>
                 <li>Thống kê, cải thiện website và dịch vụ.</li>
                 <li>Tuân thủ nghĩa vụ pháp lý, kế toán, thuế và yêu cầu của cơ quan nhà nước có thẩm quyền.</li>
             </ul>
@@ -49,6 +51,7 @@
                 <li><strong>Sàn thương mại điện tử và mạng tiếp thị liên kết</strong> (như Shopee, TikTok Shop, Lazada, AccessTrade): một mã theo dõi gắn với link hoàn tiền để ghi nhận đơn. Mã này không chứa tên, email hay số điện thoại của bạn.</li>
                 <li><strong>Nhà cung cấp hạ tầng:</strong> dịch vụ máy chủ, cơ sở dữ liệu, lưu trữ tệp và gửi email để vận hành website. Họ chỉ xử lý dữ liệu theo chỉ dẫn của chúng tôi.</li>
                 <li><strong>Google:</strong> đăng nhập bằng Google và thống kê truy cập Google Analytics.</li>
+                <li><strong>Telegram:</strong> khi bạn đã liên kết, tin nhắn giữa bạn và bot (thông báo đơn hàng, số dư, link hoàn tiền) được truyền qua máy chủ của Telegram và chịu thêm chính sách bảo mật của Telegram.</li>
                 <li><strong>Ngân hàng/ví điện tử:</strong> thông tin tài khoản nhận tiền khi thực hiện chuyển khoản cho bạn.</li>
                 <li><strong>Cơ quan nhà nước có thẩm quyền:</strong> khi pháp luật yêu cầu.</li>
             </ul>
@@ -89,6 +92,7 @@
                 <li>Được biết về việc xử lý dữ liệu và xem dữ liệu cá nhân của mình.</li>
                 <li>Chỉnh sửa thông tin trong trang Hồ sơ hoặc yêu cầu chúng tôi chỉnh sửa.</li>
                 <li>Yêu cầu xoá tài khoản và dữ liệu cá nhân, rút lại sự đồng ý hoặc hạn chế xử lý dữ liệu.</li>
+                <li>Huỷ liên kết Telegram bất cứ lúc nào trong trang Hồ sơ hoặc bằng lệnh /huylienket trong bot; khi đó chúng tôi xoá chat ID và tên người dùng Telegram khỏi tài khoản của bạn.</li>
                 <li>Phản đối việc xử lý dữ liệu, khiếu nại và yêu cầu bồi thường theo quy định.</li>
             </ul>
             <p>Gửi yêu cầu qua mục <a href="{{ route('dashboard.tickets.create') }}">hỗ trợ</a>. Chúng tôi phản hồi trong vòng 72 giờ và có thể cần xác minh danh tính trước khi xử lý. Số dư khả dụng còn lại nên được rút trước khi xoá tài khoản.</p>

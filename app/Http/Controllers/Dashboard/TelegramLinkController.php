@@ -23,6 +23,16 @@ class TelegramLinkController extends Controller
         return redirect()->away($bot->startUrl(TelegramUpdateHandler::issueLinkToken($request->user())));
     }
 
+    /**
+     * Ẩn gợi ý liên kết ở trang tổng quan; mục Telegram trong trang Hồ sơ vẫn còn.
+     */
+    public function dismissPrompt(Request $request): RedirectResponse
+    {
+        $request->user()->update(['telegram_prompt_dismissed_at' => now()]);
+
+        return back()->with('success', 'Đã ẩn gợi ý. Bạn vẫn có thể liên kết Telegram trong trang Hồ sơ.');
+    }
+
     public function destroy(Request $request, TelegramBot $bot, ActivityLogger $activity): RedirectResponse
     {
         $user = $request->user();

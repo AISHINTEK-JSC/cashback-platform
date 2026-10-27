@@ -32,6 +32,22 @@ class UserInfolist
                         TextEntry::make('last_login_at')->label('Đăng nhập gần nhất')->dateTime('d/m/Y H:i')->placeholder('-'),
                         TextEntry::make('last_login_ip')->label('IP')->placeholder('-'),
                     ]),
+                Section::make('Telegram')
+                    ->columns(4)
+                    ->schema([
+                        TextEntry::make('telegram_status')
+                            ->label('Trạng thái')
+                            ->state(fn (User $record) => $record->telegram_chat_id ? 'Đã liên kết' : 'Chưa liên kết')
+                            ->badge()
+                            ->color(fn (User $record) => $record->telegram_chat_id ? 'success' : 'gray'),
+                        TextEntry::make('telegram_username')
+                            ->label('Username')
+                            ->formatStateUsing(fn (?string $state) => '@'.$state)
+                            ->url(fn (User $record) => $record->telegram_username ? 'https://t.me/'.$record->telegram_username : null, shouldOpenInNewTab: true)
+                            ->placeholder('-'),
+                        TextEntry::make('telegram_chat_id')->label('Chat ID')->copyable()->placeholder('-'),
+                        TextEntry::make('telegram_linked_at')->label('Liên kết lúc')->dateTime('d/m/Y H:i')->placeholder('-'),
+                    ]),
                 Section::make('Ví')
                     ->columns(5)
                     ->schema([

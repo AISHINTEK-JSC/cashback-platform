@@ -6,6 +6,7 @@ use App\Filament\Support\NavigationGroup;
 use App\Support\Settings;
 use BackedEnum;
 use Filament\Forms\Components\TextInput;
+use Filament\Forms\Components\Toggle;
 use Filament\Notifications\Notification;
 use Filament\Pages\Page;
 use Filament\Schemas\Components\Section;
@@ -101,6 +102,18 @@ class ManageSettings extends Page
                             ->helperText('Ví dụ 100,100,200,200,300,300,500: ngày 1 thưởng 100đ... hết chu kỳ lặp lại từ đầu.')
                             ->regex('/^\d+(,\d+)*$/')
                             ->required(),
+                    ]),
+                Section::make('Bot Telegram')
+                    ->columns(2)
+                    ->schema([
+                        TextInput::make('telegram_chat_rate_limit')
+                            ->label('Giới hạn tin nhắn mỗi chat')
+                            ->helperText('Số tin tối đa bot xử lý cho một người trong 1 phút, vượt quá thì bỏ qua và nhắc chậm lại. 0 = không giới hạn.')
+                            ->integer()->minValue(0)->maxValue(600)->suffix('tin/phút')->required(),
+                        Toggle::make('telegram_dashboard_prompt')
+                            ->label('Gợi ý liên kết Telegram ở trang tổng quan')
+                            ->helperText('Tắt thì chỉ còn mục Telegram trong trang Hồ sơ của thành viên.')
+                            ->inline(false),
                     ]),
                 Section::make('Tích hợp API')
                     ->description('Lưu mã hoá trong hệ thống, được ưu tiên hơn file .env. Để trống ô nào thì giữ nguyên giá trị cũ của ô đó.')

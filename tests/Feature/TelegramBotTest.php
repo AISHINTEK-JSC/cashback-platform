@@ -8,11 +8,13 @@ use App\Notifications\TicketReplied;
 use App\Services\Telegram\TelegramBot;
 use App\Services\Telegram\TelegramUpdateHandler;
 use App\Services\WalletService;
+use App\Support\Settings;
 use GuzzleHttp\Psr7\Response as Psr7Response;
 use Illuminate\Http\Client\Request;
 use Illuminate\Http\Client\RequestException;
 use Illuminate\Http\Client\Response;
 use Illuminate\Support\Facades\Http;
+use Illuminate\Support\Facades\URL;
 use Illuminate\Testing\TestResponse;
 
 beforeEach(function () {
@@ -168,4 +170,80 @@ it('refuses to register a webhook that is not public https', function () {
     $this->artisan('telegram:setup')->assertFailed();
 
     Http::assertNothingSent();
+});
+
+it('limits how many messages a chat can send per minute', function () {
+    app(Settings::class)->set('telegram_chat_rate_limit', 2);
+    $this->user->update(['telegram_chat_id' => 555]);
+
+    foreach (range(1, 5) as $attempt) {
+        sendToWebhook(telegramUpdate('/sodu'))->assertNoContent();
+    }
+
+    $texts = collect(Http::recorded())->map(fn (array $pair) => (string) $pair[0]['text']);
+    expect($texts->filter(fn (string $text) => str_contains($text, 'Số dư ví')))->toHaveCount(2)
+        ->and($texts->filter(fn (string $text) => str_contains($text, 'gửi tin quá nhanh')))->toHaveCount(1);
+});
+
+it('does not limit chats when the admin sets the limit to 0', function () {
+    app(Settings::class)->set('telegram_chat_rate_limit', 0);
+    $this->user->update(['telegram_chat_id' => 555]);
+
+    foreach (range(1, 25) as $attempt) {
+        sendToWebhook(telegramUpdate('/sodu'));
+    }
+
+    Http::assertSentCount(25);
+});
+
+it('sets the bot display name, commands and webhook on setup', function () {
+    config(['app.url' => 'https://vihoantien.id.vn']);
+    URL::forceRootUrl('https://vihoantien.id.vn');
+    URL::forceScheme('https');
+
+    $this->artisan('telegram:setup')->assertSuccessful();
+
+    Http::assertSent(fn (Request $request) => str_ends_with($request->url(), '/setWebhook') && $request['url'] === 'https://vihoantien.id.vn/telegram/webhook');
+    Http::assertSent(fn (Request $request) => str_ends_with($request->url(), '/setMyName') && $request['name'] === 'Ví Hoàn Tiền');
+    Http::assertSent(fn (Request $request) => str_ends_with($request->url(), '/setMyCommands') && count($request['commands']) === count(TelegramBot::COMMANDS));
+});
+
+it('suggests linking telegram on the overview until the member links or hides it', function () {
+    $this->actingAs($this->user)->get(route('dashboard.index'))->assertSee('Nhận thông báo và tạo link ngay trên Telegram');
+
+    $this->post(route('dashboard.telegram.dismiss-prompt'))->assertSessionHas('success');
+    expect($this->user->fresh()->telegram_prompt_dismissed_at)->not->toBeNull();
+
+    $this->get(route('dashboard.index'))->assertDontSee('Nhận thông báo và tạo link ngay trên Telegram');
+    $this->get(route('dashboard.profile.edit'))->assertSee('Liên kết Telegram');
+});
+
+it('hides the overview suggestion for linked members, when turned off or when the bot is not set up', function () {
+    $linked = User::factory()->create(['telegram_chat_id' => 777]);
+    $this->actingAs($linked)->get(route('dashboard.index'))->assertDontSee('Nhận thông báo và tạo link ngay trên Telegram');
+
+    app(Settings::class)->set('telegram_dashboard_prompt', false);
+    $this->actingAs($this->user)->get(route('dashboard.index'))->assertDontSee('Nhận thông báo và tạo link ngay trên Telegram');
+
+    app(Settings::class)->set('telegram_dashboard_prompt', true);
+    config(['services.telegram.bot_token' => null]);
+    $this->actingAs($this->user)->get(route('dashboard.index'))->assertDontSee('Nhận thông báo và tạo link ngay trên Telegram');
+});
+
+it('shows the telegram link status in the admin member page', function () {
+    $this->user->update(['telegram_chat_id' => 555, 'telegram_username' => 'nguyenvana', 'telegram_linked_at' => now()]);
+
+    $this->actingAs(User::factory()->admin()->create())
+        ->get('/super/admin/users/'.$this->user->id)
+        ->assertSuccessful()
+        ->assertSee('Đã liên kết')
+        ->assertSee('@nguyenvana')
+        ->assertSee('https://t.me/nguyenvana', false);
+});
+
+it('mentions telegram data in the privacy policy', function () {
+    $this->get(route('pages.privacy'))
+        ->assertOk()
+        ->assertSee('Khi liên kết Telegram (không bắt buộc)')
+        ->assertSee('/huylienket');
 });

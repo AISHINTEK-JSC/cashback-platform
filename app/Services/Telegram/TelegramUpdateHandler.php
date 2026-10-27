@@ -51,6 +51,11 @@ class TelegramUpdateHandler
         }
 
         $chatId = (int) $message['chat']['id'];
+
+        if ($this->isFlooding($chatId)) {
+            return;
+        }
+
         $username = $message['from']['username'] ?? null;
         $text = trim((string) ($message['text'] ?? ''));
         $user = User::query()->where('telegram_chat_id', $chatId)->first();
@@ -302,6 +307,33 @@ class TelegramUpdateHandler
         }
 
         return true;
+    }
+
+    /**
+     * Giới hạn số tin mỗi chat trong 1 phút (cài đặt telegram_chat_rate_limit) để một người spam không làm nghẽn bot;
+     * vượt giới hạn thì bỏ qua, chỉ nhắc một lần trong mỗi phút.
+     */
+    private function isFlooding(int $chatId): bool
+    {
+        $limit = (int) setting('telegram_chat_rate_limit');
+
+        if ($limit <= 0) {
+            return false;
+        }
+
+        $key = 'telegram-chat:'.$chatId;
+
+        if (RateLimiter::tooManyAttempts($key, $limit)) {
+            if (Cache::add('telegram-chat-warned:'.$chatId, true, RateLimiter::availableIn($key))) {
+                $this->bot->sendMessage($chatId, 'Bạn đang gửi tin quá nhanh, vui lòng đợi khoảng '.max(1, RateLimiter::availableIn($key)).' giây rồi thử lại.');
+            }
+
+            return true;
+        }
+
+        RateLimiter::hit($key, 60);
+
+        return false;
     }
 
     private function askToLink(int $chatId, string $html): void

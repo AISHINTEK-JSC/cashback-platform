@@ -20,7 +20,7 @@ use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
 use Illuminate\Support\Str;
 
-#[Fillable(['name', 'email', 'phone', 'password', 'avatar', 'referred_by', 'level_id', 'role', 'status', 'email_verified_at', 'last_login_at', 'last_login_ip', 'telegram_chat_id', 'telegram_username', 'telegram_linked_at'])]
+#[Fillable(['name', 'email', 'phone', 'password', 'avatar', 'referred_by', 'level_id', 'role', 'status', 'email_verified_at', 'last_login_at', 'last_login_ip', 'telegram_chat_id', 'telegram_username', 'telegram_linked_at', 'telegram_prompt_dismissed_at'])]
 #[Hidden(['password', 'remember_token', 'two_factor_secret'])]
 class User extends Authenticatable implements FilamentUser, MustVerifyEmail
 {
@@ -50,6 +50,7 @@ class User extends Authenticatable implements FilamentUser, MustVerifyEmail
             'last_login_at' => 'datetime',
             'telegram_chat_id' => 'integer',
             'telegram_linked_at' => 'datetime',
+            'telegram_prompt_dismissed_at' => 'datetime',
             'password' => 'hashed',
             'two_factor_secret' => 'encrypted',
             'role' => UserRole::class,

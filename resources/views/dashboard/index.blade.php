@@ -26,6 +26,28 @@
         </div>
     </div>
 
+    @if ($showTelegramPrompt)
+        <div class="card mt-6 flex flex-col gap-4 !border-brand-200 p-5 sm:flex-row sm:items-center sm:p-6">
+            <span class="grid size-11 shrink-0 place-items-center rounded-xl bg-brand-50 text-brand-600">
+                <svg class="size-6" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M21.5 4.5 2.5 11.8l6.2 2.2 2.3 6.5 3.4-4.1 5 3.7 2.1-15.6Z"/><path d="m8.7 14 12.8-9.5"/></svg>
+            </span>
+            <div class="min-w-0 flex-1">
+                <p class="font-semibold text-stone-900">Nhận thông báo và tạo link ngay trên Telegram</p>
+                <p class="mt-1 text-sm text-stone-600">Liên kết với bot {{ '@'.config('services.telegram.bot_username') }} để biết ngay khi có đơn mới, tiền về ví, và lấy link hoàn tiền chỉ bằng cách gửi link sản phẩm cho bot.</p>
+            </div>
+            <div class="flex shrink-0 flex-wrap items-center gap-2">
+                <form method="POST" action="{{ route('dashboard.telegram.link') }}">
+                    @csrf
+                    <button type="submit" class="btn btn-primary">Liên kết Telegram</button>
+                </form>
+                <form method="POST" action="{{ route('dashboard.telegram.dismiss-prompt') }}">
+                    @csrf
+                    <button type="submit" class="btn btn-ghost text-stone-500">Ẩn gợi ý này</button>
+                </form>
+            </div>
+        </div>
+    @endif
+
     <div class="card mt-6 p-5 sm:p-6">
         <div class="mb-4 flex items-start gap-3">
             <span class="grid size-10 shrink-0 place-items-center rounded-xl bg-brand-50 text-brand-600">

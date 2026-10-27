@@ -9,7 +9,7 @@ use Illuminate\Console\Command;
 use Throwable;
 
 #[Signature('telegram:setup')]
-#[Description('Đăng ký webhook, danh sách lệnh và mô tả cho bot Telegram (chạy ở production sau mỗi lần deploy)')]
+#[Description('Đăng ký webhook, tên hiển thị, danh sách lệnh và mô tả cho bot Telegram (chạy ở production sau mỗi lần deploy)')]
 class TelegramSetup extends Command
 {
     public function handle(TelegramBot $bot): int
@@ -35,6 +35,7 @@ class TelegramSetup extends Command
                 'secret_token' => $bot->webhookSecret(),
                 'allowed_updates' => ['message'],
             ]);
+            $bot->call('setMyName', ['name' => setting('site_name')]);
             $bot->call('setMyCommands', [
                 'commands' => collect(TelegramBot::COMMANDS)->map(fn (string $description, string $command) => compact('command', 'description'))->values()->all(),
             ]);
