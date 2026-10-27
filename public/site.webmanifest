@@ -10,6 +10,11 @@
     "scope": "/",
     "theme_color": "#e04412",
     "categories": ["shopping", "finance"],
+    "share_target": {
+        "action": "/tai-khoan/chia-se",
+        "method": "GET",
+        "params": { "title": "title", "text": "text", "url": "url" }
+    },
     "icons": [
         { "src": "/icon-192.png", "sizes": "192x192", "type": "image/png", "purpose": "any" },
         { "src": "/icon-512.png", "sizes": "512x512", "type": "image/png", "purpose": "any" },

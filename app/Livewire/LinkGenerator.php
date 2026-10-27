@@ -23,9 +23,27 @@ class LinkGenerator extends Component
 
     public bool $compact = false;
 
+    /**
+     * Link được chia sẻ từ app sàn (?link=...&auto=1): tạo luôn khi trang vừa tải, không cần bấm nút.
+     */
+    public bool $autoGenerate = false;
+
     public function mount(): void
     {
         $this->url = (string) request()->query('link', '');
+        $this->autoGenerate = $this->url !== '' && request()->boolean('auto');
+    }
+
+    public function generateShared(TrackingLinkService $links, ActivityLogger $activity): void
+    {
+        if (! $this->autoGenerate) {
+            return;
+        }
+
+        $this->autoGenerate = false;
+        // Bỏ ?link=&auto= khỏi thanh địa chỉ để tải lại trang không tạo thêm link trùng
+        $this->js("history.replaceState(null, '', location.pathname)");
+        $this->generate($links, $activity);
     }
 
     public function generate(TrackingLinkService $links, ActivityLogger $activity): void

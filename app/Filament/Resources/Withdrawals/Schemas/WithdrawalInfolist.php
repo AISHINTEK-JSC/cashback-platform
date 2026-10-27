@@ -2,8 +2,12 @@
 
 namespace App\Filament\Resources\Withdrawals\Schemas;
 
+use App\Enums\WithdrawalStatus;
 use App\Models\Withdrawal;
+use App\Support\VietQr;
+use Filament\Infolists\Components\ImageEntry;
 use Filament\Infolists\Components\TextEntry;
+use Filament\Schemas\Components\Group;
 use Filament\Schemas\Components\Section;
 use Filament\Schemas\Schema;
 
@@ -31,6 +35,28 @@ class WithdrawalInfolist
                         TextEntry::make('bank_name')->label('Ngân hàng'),
                         TextEntry::make('account_number')->label('Số tài khoản')->copyable(),
                         TextEntry::make('account_name')->label('Chủ tài khoản')->copyable(),
+                    ]),
+                Section::make('Quét mã để chuyển khoản')
+                    ->description('Mở app ngân hàng và quét mã: đã điền sẵn ngân hàng, số tài khoản, số tiền thực chuyển và nội dung là mã yêu cầu. Kiểm tra lại tên chủ tài khoản trước khi xác nhận.')
+                    ->visible(fn (Withdrawal $record) => in_array($record->status, [WithdrawalStatus::Pending, WithdrawalStatus::Approved, WithdrawalStatus::Processing], true))
+                    ->columns(2)
+                    ->schema([
+                        ImageEntry::make('vietqr')
+                            ->hiddenLabel()
+                            ->state(fn (Withdrawal $record) => VietQr::forWithdrawal($record))
+                            ->imageHeight(320)
+                            ->checkFileExistence(false)
+                            ->extraImgAttributes(['alt' => 'Mã VietQR chuyển khoản', 'loading' => 'lazy'])
+                            ->visible(fn (Withdrawal $record) => VietQr::forWithdrawal($record) !== null),
+                        TextEntry::make('vietqr_unavailable')
+                            ->hiddenLabel()
+                            ->state('Không tạo được mã VietQR cho tài khoản này (ngân hàng/ví không có trong danh sách VietQR hoặc số tài khoản quá dài). Hãy chuyển khoản thủ công theo thông tin bên trên.')
+                            ->color('warning')
+                            ->visible(fn (Withdrawal $record) => VietQr::forWithdrawal($record) === null),
+                        Group::make([
+                            TextEntry::make('transfer_amount')->label('Số tiền chuyển')->state(fn (Withdrawal $record) => vnd($record->net_amount))->copyable()->copyableState(fn (Withdrawal $record) => (string) $record->net_amount)->weight('bold'),
+                            TextEntry::make('transfer_content')->label('Nội dung chuyển khoản')->state(fn (Withdrawal $record) => $record->code)->copyable()->fontFamily('mono'),
+                        ]),
                     ]),
                 Section::make('Xử lý')
                     ->columns(2)

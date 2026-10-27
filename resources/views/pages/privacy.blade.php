@@ -2,6 +2,9 @@
     $siteName = setting('site_name');
     $hotline = setting('support_hotline');
     $zalo = setting('support_zalo');
+    $email = setting('support_email');
+    $operator = setting('operator_name') ?: 'một cá nhân';
+    $address = setting('operator_address');
 @endphp
 
 <x-layouts.app title="Chính sách bảo mật" description="{{ $siteName }} thu thập dữ liệu gì, dùng vào việc gì, chia sẻ với ai và quyền của bạn đối với dữ liệu cá nhân.">
@@ -11,6 +14,7 @@
 
         <div class="prose-content mt-6">
             <p>{{ $siteName }} ("chúng tôi") tôn trọng quyền riêng tư của bạn. Chính sách này giải thích chúng tôi thu thập dữ liệu cá nhân nào, dùng vào việc gì, chia sẻ với ai và bạn có những quyền gì, theo Nghị định 13/2023/NĐ-CP về bảo vệ dữ liệu cá nhân. Khi đăng ký tài khoản, bạn đồng ý với việc xử lý dữ liệu như mô tả dưới đây.</p>
+            <p><strong>Bên kiểm soát và xử lý dữ liệu:</strong> {{ $siteName }} do {{ $operator }} sở hữu và vận hành{{ $address ? ', địa chỉ '.$address : '' }}{{ $email ? ', email '.$email : '' }}.</p>
 
             <h2>1. Dữ liệu chúng tôi thu thập</h2>
             <h3>Do bạn cung cấp</h3>
@@ -98,6 +102,12 @@
             <h2>11. Liên hệ</h2>
             <ul>
                 <li>Gửi yêu cầu hỗ trợ: <a href="{{ route('dashboard.tickets.create') }}">trong tài khoản của bạn</a></li>
+                @if ($email)
+                    <li>Email: <a href="mailto:{{ $email }}">{{ $email }}</a></li>
+                @endif
+                @if ($address)
+                    <li>Địa chỉ: {{ $address }}</li>
+                @endif
                 @if ($hotline)
                     <li>Hotline: <a href="tel:{{ $hotline }}">{{ $hotline }}</a></li>
                 @endif

@@ -1,4 +1,4 @@
-<div>
+<div @if ($autoGenerate) wire:init="generateShared" @endif>
     @if ($link)
         <div class="rounded-2xl border border-emerald-200 bg-surface p-4 text-left shadow-sm sm:p-5">
             <div class="flex items-start gap-4">
@@ -62,8 +62,8 @@
                 >Dán</button>
             </div>
             <button type="submit" class="btn btn-primary !rounded-2xl !px-6 !py-3.5 !text-base" wire:loading.attr="disabled">
-                <span wire:loading.remove wire:target="generate">Lấy link hoàn tiền</span>
-                <span wire:loading wire:target="generate">Đang tạo link...</span>
+                <span wire:loading.remove wire:target="generate, generateShared">Lấy link hoàn tiền</span>
+                <span wire:loading wire:target="generate, generateShared">Đang tạo link...</span>
             </button>
         </form>
         @error('url')

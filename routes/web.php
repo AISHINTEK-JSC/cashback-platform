@@ -79,6 +79,7 @@ Route::middleware(['auth', 'active', 'verified'])->prefix('tai-khoan')->name('da
     Route::get('/', Dashboard\OverviewController::class)->name('index');
 
     Route::get('/link-hoan-tien', [Dashboard\TrackingLinkController::class, 'index'])->name('links.index');
+    Route::get('/chia-se', Dashboard\ShareTargetController::class)->name('share-target');
 
     Route::get('/don-hang', [Dashboard\OrderController::class, 'index'])->name('orders.index');
     Route::get('/don-hang/{order}', [Dashboard\OrderController::class, 'show'])->name('orders.show');

@@ -30,6 +30,7 @@ use App\Services\Orders\OrderRewardService;
 use App\Services\WalletService;
 use App\Services\WithdrawalService;
 use App\Support\Settings;
+use App\Support\VietQr;
 use Livewire\Livewire;
 
 beforeEach(function () {
@@ -241,4 +242,36 @@ it('shows the site favicons in the admin panel', function () {
         ->assertSee('<link rel="icon" href="/favicon.ico" sizes="48x48">', false)
         ->assertSee('<link rel="icon" href="/favicon.svg" type="image/svg+xml">', false)
         ->assertSee('<link rel="apple-touch-icon" href="/apple-touch-icon.png">', false);
+});
+
+it('shows a VietQR code with the net amount and request code on open withdrawals', function () {
+    $withdrawal = fundedWithdrawal(150000);
+
+    $qr = VietQr::forWithdrawal($withdrawal);
+    expect($qr)->toStartWith('https://img.vietqr.io/image/970436-'.$withdrawal->account_number.'-compact2.svg?')
+        ->toContain('amount=150000')
+        ->toContain('addInfo='.$withdrawal->code)
+        ->toContain('accountName=NGUYEN%20VAN%20A');
+
+    $this->get('/super/admin/withdrawals/'.$withdrawal->id)
+        ->assertSuccessful()
+        ->assertSee('Quét mã để chuyển khoản')
+        ->assertSee(e($qr), false);
+
+    app(WithdrawalService::class)->markPaid($withdrawal, $this->admin);
+
+    $this->get('/super/admin/withdrawals/'.$withdrawal->id)->assertDontSee('Quét mã để chuyển khoản');
+});
+
+it('skips the VietQR code when the bank is unknown or the account number is too long', function () {
+    $withdrawal = fundedWithdrawal();
+
+    $withdrawal->bankAccount->update(['bank_code' => 'KHONGCO']);
+    expect(VietQr::forWithdrawal($withdrawal->fresh()))->toBeNull();
+
+    $withdrawal->bankAccount->update(['bank_code' => 'VCB']);
+    $withdrawal->update(['account_number' => str_repeat('1', 20)]);
+    expect(VietQr::forWithdrawal($withdrawal->fresh()))->toBeNull();
+
+    $this->get('/super/admin/withdrawals/'.$withdrawal->id)->assertSee('Không tạo được mã VietQR');
 });

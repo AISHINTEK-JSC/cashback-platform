@@ -60,6 +60,12 @@ class ManageSettings extends Page
                         TextInput::make('support_hotline')->label('Hotline')->maxLength(20),
                         TextInput::make('support_zalo')->label('Link Zalo hỗ trợ')->url(),
                         TextInput::make('support_facebook')->label('Link Fanpage')->url(),
+                        TextInput::make('support_email')->label('Email liên hệ')->email()->maxLength(191),
+                        TextInput::make('operator_name')
+                            ->label('Đơn vị/cá nhân vận hành')
+                            ->helperText('Hiển thị trong Điều khoản và Chính sách bảo mật, bỏ trống thì ghi "một cá nhân".')
+                            ->maxLength(150),
+                        TextInput::make('operator_address')->label('Địa chỉ vận hành')->maxLength(255),
                     ]),
                 Section::make('SEO & thống kê')
                     ->description('Gắn Google Analytics 4 và xác minh Google Search Console. GA chỉ chạy trên môi trường production.')

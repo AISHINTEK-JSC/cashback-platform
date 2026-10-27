@@ -8,8 +8,8 @@
                 ])>
                     @if ($logo = $banks[$account->bank_code]['logo'] ?? null)
                         {{-- Logo VietQR có nền trắng nên giữ khung trắng ở cả chế độ tối --}}
-                        <span class="grid size-11 shrink-0 place-items-center overflow-hidden rounded-xl bg-white p-1 ring-1 ring-stone-200">
-                            <img src="{{ $logo }}" alt="" class="max-h-full object-contain" loading="lazy">
+                        <span class="grid h-11 w-16 shrink-0 place-items-center overflow-hidden rounded-xl bg-white px-1.5 ring-1 ring-stone-200">
+                            <img src="{{ $logo }}" alt="" class="size-full object-contain" loading="lazy">
                         </span>
                     @else
                         <span @class([
@@ -55,16 +55,14 @@
                 <span class="grid size-9 place-items-center rounded-xl bg-brand-50 text-brand-600"><x-heroicon-o-plus class="size-5" /></span>
                 <p class="font-semibold text-stone-900">Thêm tài khoản</p>
             </div>
-            <div>
-                <label for="bank_code" class="label">Ngân hàng / ví</label>
-                <select id="bank_code" name="bank_code" class="input" required>
-                    <option value="">Chọn ngân hàng</option>
-                    @foreach ($banks as $code => $bank)
-                        <option value="{{ $code }}" @selected(old('bank_code') === $code)>{{ $bank['short_name'] }} - {{ $bank['name'] }}</option>
-                    @endforeach
-                </select>
-                @error('bank_code') <p class="field-error">{{ $message }}</p> @enderror
-            </div>
+            <x-form.searchable-select
+                name="bank_code"
+                label="Ngân hàng / ví"
+                placeholder="Chọn ngân hàng"
+                search-placeholder="Tìm ngân hàng: vietcom, VCB, momo..."
+                empty="Không tìm thấy ngân hàng phù hợp."
+                :options="collect($banks)->map(fn (array $bank, string $code) => ['value' => $code, 'label' => $bank['short_name'], 'description' => $bank['name'], 'image' => $bank['logo']])->all()"
+            />
             <x-form.input name="account_number" label="Số tài khoản / số điện thoại ví" inputmode="numeric" required />
             <x-form.input name="account_name" label="Tên chủ tài khoản" hint="Viết đúng như trên thẻ, hệ thống tự chuyển thành chữ in hoa không dấu." required />
             <p class="flex gap-2 rounded-xl bg-amber-50 p-3 text-xs text-amber-900"><x-heroicon-o-shield-check class="size-4 shrink-0" /> Tài khoản phải đứng tên bạn. Một tài khoản ngân hàng dùng cho nhiều tài khoản thành viên sẽ bị xem xét gian lận.@if ($holdHours = (int) setting('withdraw_new_bank_hold_hours')) Tài khoản mới thêm nhận được tiền rút sau {{ $holdHours }} giờ để phòng trường hợp tài khoản thành viên bị chiếm.@endif</p>

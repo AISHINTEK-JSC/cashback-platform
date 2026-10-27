@@ -2,6 +2,9 @@
     $siteName = setting('site_name');
     $hotline = setting('support_hotline');
     $zalo = setting('support_zalo');
+    $email = setting('support_email');
+    $operator = setting('operator_name') ?: 'một cá nhân';
+    $address = setting('operator_address');
     $holdHours = (int) setting('withdraw_new_bank_hold_hours');
     $withdrawMax = (int) setting('withdraw_max');
     $withdrawFee = (int) setting('withdraw_fee');
@@ -13,7 +16,7 @@
         <p class="mt-2 text-sm text-stone-500">Cập nhật lần cuối: 27/10/2026</p>
 
         <div class="prose-content mt-6">
-            <p>Chào mừng bạn đến với {{ $siteName }} ("chúng tôi"). Bằng việc đăng ký tài khoản hoặc sử dụng website, bạn đồng ý với các điều khoản dưới đây. Vui lòng đọc kỹ cùng với <a href="{{ route('pages.privacy') }}">Chính sách bảo mật</a>.</p>
+            <p>Chào mừng bạn đến với {{ $siteName }} ("chúng tôi"), website do {{ $operator }} sở hữu và vận hành{{ $address ? ', địa chỉ '.$address : '' }}. Bằng việc đăng ký tài khoản hoặc sử dụng website, bạn đồng ý với các điều khoản dưới đây. Vui lòng đọc kỹ cùng với <a href="{{ route('pages.privacy') }}">Chính sách bảo mật</a>.</p>
 
             <h2>1. Dịch vụ của chúng tôi</h2>
             <p>{{ $siteName }} là đối tác tiếp thị liên kết của các sàn thương mại điện tử và thương hiệu (Shopee, TikTok Shop, Lazada...). Khi bạn mua hàng qua link hoàn tiền do chúng tôi tạo, sàn trả cho chúng tôi một khoản hoa hồng và chúng tôi chia lại phần lớn khoản đó cho bạn dưới dạng tiền hoàn.</p>
@@ -93,6 +96,12 @@
             <h2>13. Liên hệ</h2>
             <ul>
                 <li>Gửi yêu cầu hỗ trợ: <a href="{{ route('dashboard.tickets.create') }}">trong tài khoản của bạn</a></li>
+                @if ($email)
+                    <li>Email: <a href="mailto:{{ $email }}">{{ $email }}</a></li>
+                @endif
+                @if ($address)
+                    <li>Địa chỉ: {{ $address }}</li>
+                @endif
                 @if ($hotline)
                     <li>Hotline: <a href="tel:{{ $hotline }}">{{ $hotline }}</a></li>
                 @endif

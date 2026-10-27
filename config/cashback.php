@@ -18,6 +18,10 @@ return [
         'support_hotline' => '',
         'support_zalo' => '',
         'support_facebook' => '',
+        'support_email' => 'levanthanh.dev@gmail.com',
+        // Bên vận hành nêu trong Điều khoản/Chính sách bảo mật (Nghị định 13/2023 yêu cầu nêu rõ bên xử lý dữ liệu)
+        'operator_name' => '',
+        'operator_address' => 'Tây Mỗ, Hà Nội',
 
         // SEO & thống kê: GA4 (G-XXXX) chỉ chạy ở production, mã xác minh là phần content của thẻ meta Search Console
         'google_analytics_id' => env('GOOGLE_ANALYTICS_ID', ''),

@@ -220,11 +220,15 @@ it('renders the terms and privacy pages with live settings', function () {
         ->assertSee('Điều khoản sử dụng')
         ->assertSee(vnd(50000))
         ->assertSee('sau <strong>24 giờ</strong>', false)
+        ->assertSee('do một cá nhân sở hữu và vận hành, địa chỉ Tây Mỗ, Hà Nội')
         ->assertDontSee('Bản mẫu');
 
     $this->get(route('pages.privacy'))
         ->assertOk()
         ->assertSee('Nghị định 13/2023/NĐ-CP')
         ->assertSee('Khi đăng nhập bằng Google')
+        ->assertSee('Bên kiểm soát và xử lý dữ liệu')
+        ->assertSee('mailto:levanthanh.dev@gmail.com', false)
+        ->assertSee('Tây Mỗ, Hà Nội')
         ->assertDontSee('Bản mẫu');
 });
