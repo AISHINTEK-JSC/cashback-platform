@@ -32,7 +32,7 @@
         <div class="lg:grid lg:grid-cols-[248px_1fr] lg:gap-8">
             <aside class="mb-6 lg:mb-0">
                 <div class="lg:sticky lg:top-24 lg:space-y-4">
-                    <a href="{{ route('dashboard.profile.edit') }}" class="card hidden items-center gap-3 p-3 transition hover:border-stone-300 lg:flex">
+                    <a href="{{ route('dashboard.profile.edit') }}" class="card hidden items-center gap-3 p-3 transition hover:border-stone-300 lg:flex lg:shadow-md">
                         <span class="grid size-11 shrink-0 place-items-center overflow-hidden rounded-full bg-brand-100 font-semibold text-brand-700">
                             @if ($user->avatar)
                                 <img src="{{ $user->avatar }}" alt="" class="size-full object-cover">
@@ -49,7 +49,8 @@
                         </span>
                     </a>
 
-                    <nav class="-mx-4 flex gap-1.5 overflow-x-auto px-4 pb-2 [scrollbar-width:none] lg:mx-0 lg:block lg:space-y-5 lg:overflow-visible lg:px-0 lg:pb-0" aria-label="Menu tài khoản">
+                    {{-- Desktop: menu nằm trong khung trắng đổ bóng; mobile giữ dạng thanh cuộn ngang --}}
+                    <nav class="-mx-4 flex gap-1.5 overflow-x-auto px-4 pb-2 [scrollbar-width:none] lg:mx-0 lg:block lg:space-y-5 lg:overflow-visible lg:rounded-2xl lg:border lg:border-stone-200 lg:bg-surface lg:p-3 lg:shadow-md" aria-label="Menu tài khoản">
                         @foreach ($groups as $group => $items)
                             <div class="contents lg:block">
                                 <p class="mb-1.5 hidden px-3 text-[11px] font-semibold tracking-wider text-stone-400 uppercase lg:block">{{ $group }}</p>
@@ -59,7 +60,7 @@
                                         <a href="{{ route($item['route']) }}" @if ($isActive) aria-current="page" @endif @class([
                                             'group relative flex shrink-0 items-center gap-3 rounded-xl px-3 py-2 text-sm font-medium whitespace-nowrap transition',
                                             'bg-brand-600 text-white shadow-sm lg:bg-brand-50 lg:text-brand-700 lg:shadow-none' => $isActive,
-                                            'border border-stone-200 bg-surface text-stone-600 hover:text-stone-900 lg:border-0 lg:bg-transparent lg:hover:bg-surface' => ! $isActive,
+                                            'border border-stone-200 bg-surface text-stone-600 hover:text-stone-900 lg:border-0 lg:bg-transparent lg:hover:bg-stone-100' => ! $isActive,
                                         ])>
                                             @if ($isActive)
                                                 <span class="absolute inset-y-2 -left-px hidden w-1 rounded-r-full bg-brand-600 lg:block"></span>
