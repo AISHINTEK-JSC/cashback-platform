@@ -2,6 +2,7 @@
 
 namespace App\Filament\Resources\Withdrawals\Schemas;
 
+use App\Enums\WithdrawalMethod;
 use App\Enums\WithdrawalStatus;
 use App\Models\Withdrawal;
 use App\Support\VietQr;
@@ -22,6 +23,7 @@ class WithdrawalInfolist
                     ->schema([
                         TextEntry::make('code')->label('Mã'),
                         TextEntry::make('status')->label('Trạng thái')->badge(),
+                        TextEntry::make('method')->label('Cách nhận')->badge(),
                         TextEntry::make('user.name')->label('Thành viên')->helperText(fn (Withdrawal $record) => $record->user?->email),
                         TextEntry::make('request_ip')->label('IP yêu cầu')->placeholder('-'),
                         TextEntry::make('amount')->label('Số tiền')->formatStateUsing(fn ($state) => vnd($state)),
@@ -30,15 +32,29 @@ class WithdrawalInfolist
                         TextEntry::make('created_at')->label('Ngày tạo')->dateTime('d/m/Y H:i'),
                     ]),
                 Section::make('Tài khoản nhận (snapshot lúc tạo yêu cầu)')
+                    ->visible(fn (Withdrawal $record) => $record->method === WithdrawalMethod::Bank)
                     ->columns(3)
                     ->schema([
                         TextEntry::make('bank_name')->label('Ngân hàng'),
                         TextEntry::make('account_number')->label('Số tài khoản')->copyable(),
                         TextEntry::make('account_name')->label('Chủ tài khoản')->copyable(),
                     ]),
+                Section::make(fn (Withdrawal $record) => $record->method === WithdrawalMethod::PhoneCard ? 'Thẻ cào cần gửi' : 'Số điện thoại cần nạp')
+                    ->description(fn (Withdrawal $record) => $record->method === WithdrawalMethod::PhoneCard
+                        ? 'Mua thẻ đúng nhà mạng và mệnh giá (VD trong app ngân hàng), rồi bấm "Gửi thẻ cào" để nhập serial và mã thẻ cho thành viên.'
+                        : 'Nạp đúng mệnh giá vào số bên dưới (VD trong app ngân hàng), rồi bấm "Đã thanh toán".')
+                    ->visible(fn (Withdrawal $record) => $record->method->isPhone())
+                    ->columns(3)
+                    ->schema([
+                        TextEntry::make('phone_carrier')->label('Nhà mạng'),
+                        TextEntry::make('net_amount_phone')->label('Mệnh giá')->state(fn (Withdrawal $record) => vnd($record->net_amount))->weight('bold'),
+                        TextEntry::make('phone_number')->label('Số điện thoại')->copyable()->fontFamily('mono')->visible(fn (Withdrawal $record) => $record->method === WithdrawalMethod::PhoneTopup),
+                        TextEntry::make('card_serial')->label('Serial')->copyable()->fontFamily('mono')->visible(fn (Withdrawal $record) => filled($record->card_serial)),
+                        TextEntry::make('card_code')->label('Mã thẻ')->copyable()->fontFamily('mono')->visible(fn (Withdrawal $record) => filled($record->card_serial)),
+                    ]),
                 Section::make('Quét mã để chuyển khoản')
                     ->description('Mở app ngân hàng và quét mã: đã điền sẵn ngân hàng, số tài khoản, số tiền thực chuyển và nội dung là mã yêu cầu. Kiểm tra lại tên chủ tài khoản trước khi xác nhận.')
-                    ->visible(fn (Withdrawal $record) => in_array($record->status, [WithdrawalStatus::Pending, WithdrawalStatus::Approved, WithdrawalStatus::Processing], true))
+                    ->visible(fn (Withdrawal $record) => $record->method === WithdrawalMethod::Bank && in_array($record->status, [WithdrawalStatus::Pending, WithdrawalStatus::Approved, WithdrawalStatus::Processing], true))
                     ->columns(2)
                     ->schema([
                         ImageEntry::make('vietqr')

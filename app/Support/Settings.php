@@ -89,6 +89,19 @@ class Settings
     }
 
     /**
+     * Mệnh giá nạp điện thoại / thẻ cào cho phép rút, tăng dần.
+     *
+     * @return list<int>
+     */
+    public function phoneWithdrawAmounts(): array
+    {
+        $amounts = array_unique(array_map('intval', array_filter(explode(',', (string) $this->get('phone_withdraw_amounts')), 'strlen')));
+        sort($amounts);
+
+        return array_values(array_filter($amounts, fn (int $amount) => $amount > 0));
+    }
+
+    /**
      * @return array<string, string|null>
      */
     private function all(): array

@@ -49,6 +49,9 @@
             <h2>5. Rút tiền</h2>
             <ul>
                 <li>Số tiền rút tối thiểu là <strong>{{ vnd((int) setting('withdraw_min')) }}</strong>{{ $withdrawMax > 0 ? ', tối đa '.vnd($withdrawMax).' mỗi lần' : '' }}. Phí rút: <strong>{{ $withdrawFee > 0 ? vnd($withdrawFee).' mỗi lần' : 'miễn phí' }}</strong>.</li>
+                @if ($phoneWithdrawMin = app(\App\Services\WithdrawalService::class)->phoneMinimum())
+                    <li>Bạn có thể nhận tiền bằng <strong>nạp tiền điện thoại hoặc thẻ cào</strong> theo các mệnh giá có sẵn, từ <strong>{{ vnd($phoneWithdrawMin) }}</strong>, không mất phí. Mã thẻ cào hiển thị trong mục Rút tiền khi yêu cầu được xử lý; bạn tự bảo mật mã thẻ sau khi nhận.</li>
+                @endif
                 <li>Tài khoản nhận tiền phải <strong>đứng tên chính bạn</strong>. Chúng tôi có thể từ chối chi trả về tài khoản không trùng tên chủ tài khoản thành viên.</li>
                 @if ($holdHours > 0)
                     <li>Để phòng trường hợp tài khoản bị chiếm và đổi số tài khoản nhận tiền, tài khoản ngân hàng mới thêm chỉ nhận được tiền rút sau <strong>{{ $holdHours }} giờ</strong>.</li>

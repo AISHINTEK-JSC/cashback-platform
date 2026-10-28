@@ -2,6 +2,7 @@
 
 namespace App\Filament\Resources\Withdrawals\Pages;
 
+use App\Enums\WithdrawalMethod;
 use App\Enums\WithdrawalStatus;
 use App\Filament\Resources\Withdrawals\WithdrawalResource;
 use App\Models\Withdrawal;
@@ -29,6 +30,7 @@ class ListWithdrawals extends ListRecords
                     fputcsv($out, ['Mã', 'Ngân hàng', 'Số tài khoản', 'Chủ tài khoản', 'Số tiền chuyển', 'Nội dung']);
 
                     Withdrawal::query()
+                        ->where('method', WithdrawalMethod::Bank)
                         ->whereIn('status', [WithdrawalStatus::Approved, WithdrawalStatus::Processing])
                         ->orderBy('id')
                         ->each(fn (Withdrawal $w) => fputcsv($out, [$w->code, $w->bank_name, $w->account_number, $w->account_name, $w->net_amount, "Hoan tien {$w->code}"]));

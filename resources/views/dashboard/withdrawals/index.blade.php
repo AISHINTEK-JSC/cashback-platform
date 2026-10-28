@@ -1,4 +1,4 @@
-<x-layouts.dashboard title="Rút tiền" description="Rút số dư khả dụng về tài khoản ngân hàng hoặc ví điện tử của bạn.">
+<x-layouts.dashboard title="Rút tiền" description="Rút số dư khả dụng về ngân hàng, ví điện tử, nạp tiền điện thoại hoặc đổi thẻ cào.">
     <div class="grid gap-6 xl:grid-cols-[380px_1fr]">
         <div class="space-y-4">
             <livewire:withdraw-form />
@@ -16,7 +16,7 @@
             @else
                 <div class="card overflow-x-auto">
                     <table class="table-base min-w-[560px]">
-                        <thead><tr><th>Mã</th><th>Tài khoản</th><th class="text-right">Số tiền</th><th>Trạng thái</th><th><span class="sr-only">Thao tác</span></th></tr></thead>
+                        <thead><tr><th>Mã</th><th>Nhận về</th><th class="text-right">Số tiền</th><th>Trạng thái</th><th><span class="sr-only">Thao tác</span></th></tr></thead>
                         <tbody>
                             @foreach ($withdrawals as $withdrawal)
                                 <tr class="hover:bg-stone-50">
@@ -25,8 +25,21 @@
                                         <p class="text-xs text-stone-500">{{ $withdrawal->created_at->format('d/m/Y H:i') }}</p>
                                     </td>
                                     <td>
-                                        <p class="text-stone-900">{{ $withdrawal->bank_name }}</p>
-                                        <p class="text-xs text-stone-500">{{ $withdrawal->account_number }}</p>
+                                        <p class="text-stone-900">{{ $withdrawal->destinationName() }}</p>
+                                        @if ($destinationNumber = $withdrawal->destinationNumber())<p class="text-xs text-stone-500">{{ $destinationNumber }}</p>@endif
+                                        @if ($withdrawal->method === \App\Enums\WithdrawalMethod::PhoneCard && $withdrawal->status === \App\Enums\WithdrawalStatus::Paid && filled($withdrawal->card_code))
+                                            <dl class="mt-1.5 space-y-0.5 rounded-lg bg-emerald-50 px-2.5 py-1.5 text-xs text-emerald-900">
+                                                <div class="flex gap-1"><dt>Serial:</dt><dd class="font-mono">{{ $withdrawal->card_serial }}</dd></div>
+                                                <div class="flex items-center gap-1">
+                                                    <dt>Mã thẻ:</dt>
+                                                    <dd class="font-mono font-semibold">{{ $withdrawal->card_code }}</dd>
+                                                    <button type="button" x-data="copyable(@js($withdrawal->card_code))" @click="copy()" class="rounded p-0.5 hover:bg-emerald-100" :aria-label="copied ? 'Đã sao chép mã thẻ' : 'Sao chép mã thẻ'" :title="copied ? 'Đã sao chép mã thẻ' : 'Sao chép mã thẻ'" aria-label="Sao chép mã thẻ">
+                                                        <x-heroicon-o-document-duplicate class="size-3.5" x-show="!copied" />
+                                                        <x-heroicon-o-check class="size-3.5" x-show="copied" x-cloak />
+                                                    </button>
+                                                </div>
+                                            </dl>
+                                        @endif
                                     </td>
                                     <td class="text-right tabular-nums">
                                         <p class="font-semibold">{{ vnd($withdrawal->amount) }}</p>

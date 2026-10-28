@@ -99,6 +99,18 @@ class ManageSettings extends Page
                             ->helperText('Số giờ phải chờ sau khi thành viên thêm tài khoản ngân hàng, 0 = tắt.')
                             ->integer()->minValue(0)->maxValue(168)->suffix('giờ')->required(),
                     ]),
+                Section::make('Rút bằng nạp điện thoại / thẻ cào')
+                    ->description('Thành viên chọn mệnh giá, admin tự nạp hoặc mua thẻ (VD trong app ngân hàng) rồi xác nhận. Không thu phí, không áp mức rút tối thiểu/tối đa ở trên.')
+                    ->columns(3)
+                    ->schema([
+                        Toggle::make('phone_topup_enabled')->label('Cho rút bằng nạp tiền điện thoại')->inline(false),
+                        Toggle::make('phone_card_enabled')->label('Cho rút bằng thẻ cào')->inline(false),
+                        TextInput::make('phone_withdraw_amounts')
+                            ->label('Mệnh giá (đ, cách nhau dấu phẩy)')
+                            ->helperText('Ví dụ 10000,20000,50000,100000,200000,500000')
+                            ->regex('/^\d+(,\d+)*$/')
+                            ->required(),
+                    ]),
                 Section::make('Điểm danh')
                     ->schema([
                         TextInput::make('checkin_rewards')

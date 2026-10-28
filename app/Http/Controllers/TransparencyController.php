@@ -60,7 +60,7 @@ class TransparencyController extends Controller
             'recent' => $paid()->with('user:id,name')->latest('paid_at')->limit(10)->get()
                 ->map(fn (Withdrawal $withdrawal) => [
                     'member' => static::maskName($withdrawal->user?->name),
-                    'bank' => $withdrawal->bank_name,
+                    'bank' => $withdrawal->destinationName(),
                     'amount' => (int) $withdrawal->net_amount,
                     'paid_at' => $withdrawal->paid_at?->toIso8601String(),
                     'minutes' => $withdrawal->paid_at ? (int) $withdrawal->created_at->diffInMinutes($withdrawal->paid_at) : null,

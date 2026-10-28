@@ -36,6 +36,10 @@ return [
         'withdraw_max_pending' => 1,
         // Tài khoản nhận tiền mới thêm phải chờ ngần này giờ mới nhận được tiền rút (chống chiếm tài khoản rồi đổi STK), 0 = tắt
         'withdraw_new_bank_hold_hours' => 24,
+        // Rút bằng nạp tiền điện thoại / thẻ cào: theo mệnh giá cố định, không phí, mức thấp nhất thường dưới withdraw_min nên người mới rút được sớm
+        'phone_topup_enabled' => true,
+        'phone_card_enabled' => true,
+        'phone_withdraw_amounts' => '10000,20000,50000,100000,200000,500000',
 
         // Điểm danh: thưởng theo ngày thứ n trong chuỗi, lặp lại sau khi hết mảng
         'checkin_rewards' => '100,100,200,200,300,300,500',

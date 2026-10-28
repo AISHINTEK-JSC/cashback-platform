@@ -1,14 +1,19 @@
 <?php
 
+use App\Enums\PhoneCarrier;
 use App\Enums\WalletBucket;
 use App\Enums\WalletTransactionType;
+use App\Enums\WithdrawalMethod;
 use App\Enums\WithdrawalStatus;
 use App\Exceptions\BusinessRuleException;
+use App\Livewire\WithdrawForm;
 use App\Models\User;
 use App\Models\UserBankAccount;
 use App\Services\WalletService;
 use App\Services\WithdrawalService;
 use App\Support\Settings;
+use Illuminate\Support\Facades\DB;
+use Livewire\Livewire;
 
 beforeEach(function () {
     $this->user = User::factory()->create();
@@ -135,4 +140,121 @@ it('shows when a new bank account can receive withdrawals', function () {
         ->get(route('dashboard.bank-accounts.index'))
         ->assertOk()
         ->assertSee('Nhận được tiền rút từ '.$newBank->created_at->addDay()->format('H:i d/m/Y'));
+});
+
+it('tops up a phone below the bank transfer minimum without a fee', function () {
+    app(Settings::class)->set('withdraw_fee', 5000);
+
+    $withdrawal = $this->service->requestPhone($this->user, WithdrawalMethod::PhoneTopup, PhoneCarrier::Viettel, 10000, '+84 98 123 4567');
+
+    expect($withdrawal)
+        ->method->toBe(WithdrawalMethod::PhoneTopup)
+        ->phone_carrier->toBe(PhoneCarrier::Viettel)
+        ->phone_number->toBe('0981234567')
+        ->fee->toBe(0)
+        ->net_amount->toBe(10000)
+        ->bank_name->toBeNull();
+
+    $wallet = $this->user->wallet->fresh();
+    expect($wallet->available_balance)->toBe(190000)
+        ->and($wallet->frozen_balance)->toBe(10000);
+});
+
+it('only accepts the configured phone denominations', function () {
+    $this->service->requestPhone($this->user, WithdrawalMethod::PhoneCard, PhoneCarrier::Mobifone, 15000);
+})->throws(BusinessRuleException::class, 'Mệnh giá không hợp lệ');
+
+it('requires a valid mobile number for phone top-ups', function () {
+    $this->service->requestPhone($this->user, WithdrawalMethod::PhoneTopup, PhoneCarrier::Viettel, 10000, '0241234567');
+})->throws(BusinessRuleException::class, 'Số điện thoại không hợp lệ');
+
+it('refuses phone payouts the admin turned off', function () {
+    app(Settings::class)->set('phone_card_enabled', false);
+
+    $this->service->requestPhone($this->user, WithdrawalMethod::PhoneCard, PhoneCarrier::Viettel, 10000);
+})->throws(BusinessRuleException::class, 'tạm ngưng');
+
+it('shares the open request limit with bank withdrawals', function () {
+    $this->service->request($this->user, $this->bank, 50000);
+    $this->service->requestPhone($this->user, WithdrawalMethod::PhoneCard, PhoneCarrier::Viettel, 10000);
+})->throws(BusinessRuleException::class, 'chưa xử lý xong');
+
+it('delivers a scratch card with an encrypted code and keeps the code out of notifications', function () {
+    $withdrawal = $this->service->requestPhone($this->user, WithdrawalMethod::PhoneCard, PhoneCarrier::Vinaphone, 20000);
+
+    expect(fn () => $this->service->markPaid($withdrawal, $this->admin))->toThrow(BusinessRuleException::class, 'serial và mã thẻ');
+
+    $this->service->deliverCard($withdrawal, $this->admin, ' 10001234567 ', '123456789012345');
+
+    $withdrawal->refresh();
+    expect($withdrawal)
+        ->status->toBe(WithdrawalStatus::Paid)
+        ->card_serial->toBe('10001234567')
+        ->card_code->toBe('123456789012345')
+        ->and(DB::table('withdrawals')->where('id', $withdrawal->id)->value('card_code'))->not->toContain('123456789012345')
+        ->and($this->user->wallet->fresh()->total_withdrawn)->toBe(20000);
+
+    $notification = $this->user->notifications()->latest()->first();
+    expect($notification->data['body'])->toContain('Thẻ cào Vinaphone')->not->toContain('123456789012345');
+});
+
+it('shows a delivered card code only to its owner', function () {
+    $withdrawal = $this->service->requestPhone($this->user, WithdrawalMethod::PhoneCard, PhoneCarrier::Viettel, 50000);
+    $this->service->deliverCard($withdrawal, $this->admin, '10009998887', '999988887777666');
+
+    $this->actingAs($this->user)
+        ->get(route('dashboard.withdrawals.index'))
+        ->assertOk()
+        ->assertSee('Thẻ cào Viettel')
+        ->assertSee('999988887777666');
+
+    $this->actingAs(User::factory()->create())
+        ->get(route('dashboard.withdrawals.index'))
+        ->assertOk()
+        ->assertDontSee('999988887777666');
+});
+
+it('creates a phone top-up request from the withdraw form', function () {
+    Livewire::actingAs($this->user)
+        ->test(WithdrawForm::class)
+        ->assertSet('method', 'bank')
+        ->set('method', 'phone_topup')
+        ->set('carrier', 'viettel')
+        ->set('phoneNumber', '0981234567')
+        ->set('amount', 20000)
+        ->call('submit')
+        ->assertHasNoErrors()
+        ->assertRedirect(route('dashboard.withdrawals.index'));
+
+    expect($this->user->withdrawals()->sole())
+        ->method->toBe(WithdrawalMethod::PhoneTopup)
+        ->phone_number->toBe('0981234567')
+        ->amount->toBe(20000);
+});
+
+it('validates the phone number in the withdraw form', function () {
+    Livewire::actingAs($this->user)
+        ->test(WithdrawForm::class)
+        ->set('method', 'phone_topup')
+        ->set('carrier', 'viettel')
+        ->set('phoneNumber', '12345')
+        ->set('amount', 20000)
+        ->call('submit')
+        ->assertHasErrors('phoneNumber');
+
+    expect($this->user->withdrawals()->exists())->toBeFalse();
+});
+
+it('hides phone payouts from the withdraw form when turned off', function () {
+    app(Settings::class)->set('phone_topup_enabled', false);
+    app(Settings::class)->set('phone_card_enabled', false);
+
+    Livewire::actingAs($this->user)
+        ->test(WithdrawForm::class)
+        ->assertDontSee('Nạp điện thoại')
+        ->set('method', 'phone_card')
+        ->set('carrier', 'viettel')
+        ->set('amount', 10000)
+        ->call('submit')
+        ->assertHasErrors('method');
 });

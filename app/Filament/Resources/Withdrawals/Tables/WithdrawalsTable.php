@@ -2,6 +2,7 @@
 
 namespace App\Filament\Resources\Withdrawals\Tables;
 
+use App\Enums\WithdrawalMethod;
 use App\Enums\WithdrawalStatus;
 use App\Filament\Support\WithdrawalActions;
 use App\Models\Withdrawal;
@@ -20,7 +21,10 @@ class WithdrawalsTable
             ->columns([
                 TextColumn::make('code')->label('Mã')->searchable()->weight('medium'),
                 TextColumn::make('user.name')->label('Thành viên')->searchable()->description(fn (Withdrawal $record) => $record->user?->email),
-                TextColumn::make('bank_name')->label('Ngân hàng')->description(fn (Withdrawal $record) => $record->account_number.' - '.$record->account_name),
+                TextColumn::make('destination')
+                    ->label('Nhận về')
+                    ->state(fn (Withdrawal $record) => $record->destinationName())
+                    ->description(fn (Withdrawal $record) => $record->method === WithdrawalMethod::Bank ? $record->account_number.' - '.$record->account_name : $record->destinationNumber()),
                 TextColumn::make('amount')->label('Số tiền')->formatStateUsing(fn ($state) => vnd($state))->sortable()->alignEnd(),
                 TextColumn::make('net_amount')->label('Thực chuyển')->formatStateUsing(fn ($state) => vnd($state))->alignEnd(),
                 TextColumn::make('status')->label('Trạng thái')->badge(),
@@ -30,6 +34,7 @@ class WithdrawalsTable
             ])
             ->filters([
                 SelectFilter::make('status')->label('Trạng thái')->options(WithdrawalStatus::class)->multiple(),
+                SelectFilter::make('method')->label('Cách nhận')->options(WithdrawalMethod::class),
             ])
             ->recordActions([
                 ViewAction::make(),

@@ -2,9 +2,11 @@
 
 use App\Enums\FraudFlagStatus;
 use App\Enums\OrderStatus;
+use App\Enums\PhoneCarrier;
 use App\Enums\UserStatus;
 use App\Enums\WalletBucket;
 use App\Enums\WalletTransactionType;
+use App\Enums\WithdrawalMethod;
 use App\Enums\WithdrawalStatus;
 use App\Filament\Pages\ManageSettings;
 use App\Filament\Pages\RunCommands;
@@ -91,6 +93,62 @@ it('rejects a withdrawal and refunds the member', function () {
 
     expect($withdrawal->fresh()->status)->toBe(WithdrawalStatus::Rejected)
         ->and($withdrawal->user->wallet->fresh()->available_balance)->toBe(500000);
+});
+
+function fundedPhoneWithdrawal(WithdrawalMethod $method, int $amount = 20000): Withdrawal
+{
+    $user = User::factory()->create();
+    app(WalletService::class)->post($user, WalletTransactionType::Bonus, WalletBucket::Available, 500000);
+
+    return app(WithdrawalService::class)->requestPhone($user, $method, PhoneCarrier::Viettel, $amount, '0981234567');
+}
+
+it('shows phone payout details instead of the bank QR', function (WithdrawalMethod $method, string $heading) {
+    $withdrawal = fundedPhoneWithdrawal($method);
+
+    $this->get("/super/admin/withdrawals/{$withdrawal->id}")
+        ->assertSuccessful()
+        ->assertSee($heading)
+        ->assertDontSee('Quét mã để chuyển khoản');
+})->with([
+    'top-up' => [WithdrawalMethod::PhoneTopup, 'Số điện thoại cần nạp'],
+    'card' => [WithdrawalMethod::PhoneCard, 'Thẻ cào cần gửi'],
+]);
+
+it('delivers a scratch card from the table', function () {
+    $withdrawal = fundedPhoneWithdrawal(WithdrawalMethod::PhoneCard);
+
+    Livewire::test(ListWithdrawals::class)
+        ->assertTableActionHidden('markPaid', $withdrawal)
+        ->callTableAction('deliverCard', $withdrawal, data: ['card_serial' => '10001234567', 'card_code' => '123456789012345'])
+        ->assertHasNoTableActionErrors();
+
+    expect($withdrawal->fresh())
+        ->status->toBe(WithdrawalStatus::Paid)
+        ->card_code->toBe('123456789012345')
+        ->reviewed_by->toBe($this->admin->id);
+});
+
+it('marks a phone top-up as paid', function () {
+    $withdrawal = fundedPhoneWithdrawal(WithdrawalMethod::PhoneTopup);
+
+    Livewire::test(ListWithdrawals::class)
+        ->assertTableActionHidden('deliverCard', $withdrawal)
+        ->callTableAction('markPaid', $withdrawal, data: ['bank_txn_ref' => 'NAP123'])
+        ->assertHasNoTableActionErrors();
+
+    expect($withdrawal->fresh()->status)->toBe(WithdrawalStatus::Paid);
+});
+
+it('exports only bank transfers in the transfer order CSV', function () {
+    $bank = fundedWithdrawal();
+    $phone = fundedPhoneWithdrawal(WithdrawalMethod::PhoneTopup);
+    app(WithdrawalService::class)->approve($bank, $this->admin);
+    app(WithdrawalService::class)->approve($phone, $this->admin);
+
+    $csv = Livewire::test(ListWithdrawals::class)->callAction('export')->effects['download']['content'] ?? '';
+
+    expect(base64_decode($csv))->toContain($bank->code)->not->toContain($phone->code);
 });
 
 it('approves an order from the order page', function () {

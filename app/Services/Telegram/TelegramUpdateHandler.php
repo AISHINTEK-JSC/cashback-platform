@@ -7,6 +7,7 @@ use App\Models\User;
 use App\Services\ActivityLogger;
 use App\Services\ReferralService;
 use App\Services\TrackingLinkService;
+use App\Services\WithdrawalService;
 use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\RateLimiter;
 use Illuminate\Support\Str;
@@ -26,6 +27,7 @@ class TelegramUpdateHandler
         private readonly TrackingLinkService $links,
         private readonly ReferralService $referrals,
         private readonly ActivityLogger $activity,
+        private readonly WithdrawalService $withdrawals,
     ) {}
 
     /**
@@ -228,11 +230,17 @@ class TelegramUpdateHandler
 
         $available = (int) $user->wallet?->available_balance;
         $min = (int) setting('withdraw_min');
+        $phoneMin = $this->withdrawals->phoneMinimum();
+
+        $hint = match (true) {
+            $available >= $min => 'Bấm nút bên dưới để tạo yêu cầu rút về ngân hàng/ví điện tử'.($phoneMin !== null ? ', nạp tiền điện thoại hoặc đổi thẻ cào.' : '.'),
+            $phoneMin !== null && $available >= $phoneMin => 'Chưa đủ '.vnd($min).' để rút về ngân hàng, nhưng bạn đã có thể nạp tiền điện thoại hoặc đổi thẻ cào từ '.vnd($phoneMin).'.',
+            default => 'Cần tối thiểu '.vnd($phoneMin !== null ? min($min, $phoneMin) : $min).' để rút tiền.',
+        };
 
         $this->bot->sendMessage(
             $chatId,
-            '🏦 Số dư có thể rút: <b>'.vnd($available)."</b>\n"
-                .($available >= $min ? 'Bấm nút bên dưới để tạo yêu cầu rút về tài khoản ngân hàng.' : 'Cần tối thiểu '.vnd($min).' để rút tiền.'),
+            '🏦 Số dư có thể rút: <b>'.vnd($available)."</b>\n".$hint,
             [['Rút tiền', route('dashboard.withdrawals.index')]],
         );
     }
